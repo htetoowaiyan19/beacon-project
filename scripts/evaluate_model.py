@@ -1,16 +1,11 @@
 # train ထားသော AI အား evaluation ဖြင့် prompts အများအပြားသုံးခါ စမ်းသပ်ရာတွင် သုံးသော script ဖြစ်သည်။
 
-import sys
-import json
-import time
-
+import sys, json, time
+from pathlib import Path
 from datetime import datetime
+import torch
 
-from transformers import (
-    AutoTokenizer,
-    AutoModelForCausalLM
-)
-
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 
 from utils.generation_utils import GENERATION_CONFIG
@@ -21,284 +16,112 @@ from utils.model_utils import get_gpu_info
 # ============================================================
 
 MODEL_PATH = "../models/qwen3-4b"
-PROMPTS_FILE = ("../prompts/evaluation_prompts.json") # ဤနေရာတွင် evaluation အတွက် အသုံးပြုမည့် prompts များပြင်နိုင်သည်။
+LORA_PATH = "../outputs/checkpoints"
+PROMPTS_FILE = "../prompts/evaluation_prompts.json" # Evaluate လုပ်မည့် prompts များရှိသည့် json file
 
 # ============================================================
 # ARGUMENTS
 # ============================================================
 
-if len(sys.argv) < 2:
-    print(
-        "Usage:\n"
-        "python evaluate_model.py --think\n"
-        "python evaluate_model.py --nothink"
-    )
-    sys.exit(1)
-
+if len(sys.argv) < 2: print("Usage: python evaluate_model.py --think|--nothink"); sys.exit(1)
 mode = sys.argv[1]
-
-VALID_MODES = [
-    "--think",
-    "--nothink"
-]
-
-if mode not in VALID_MODES:
-
-    print(
-        "Invalid mode.\n"
-        "Use --think or --nothink"
-    )
-
-    sys.exit(1)
+if mode not in ["--think", "--nothink"]: print("Invalid mode"); sys.exit(1)
+prefix = "/no_think\n" if mode == "--nothink" else ""
 
 # ============================================================
-# TIMESTAMP
+# TIME + PROMPTS
 # ============================================================
 
-timestamp = datetime.now()
-timestamp_str = timestamp.strftime("%Y-%m-%d %H:%M:%S")
-report_date = timestamp.strftime("%Y%m%d")
+now = datetime.now()
+ts, date = now.strftime("%Y-%m-%d %H:%M:%S"), now.strftime("%Y%m%d")
+
+prompts = json.load(open(PROMPTS_FILE, "r", encoding="utf-8"))
+
+Path("../outputs/evaluations/results").mkdir(parents=True, exist_ok=True)
 
 # ============================================================
-# LOAD PROMPTS
-# ============================================================
-
-with open(
-    PROMPTS_FILE,
-    "r",
-    encoding="utf-8"
-) as file:
-    prompts = json.load(file)
-
-# ============================================================
-# LOAD MODEL
+# LOAD MODEL (BASE + LORA)
 # ============================================================
 
 print("Loading tokenizer...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-print("Loading model...")
 
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_PATH,
-    device_map="auto"
-)
+print("Loading base model...")
+base_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, device_map="auto")
 
-gpu_info = get_gpu_info()
+print("Loading LoRA...")
+model = PeftModel.from_pretrained(base_model, LORA_PATH)
 
-# ============================================================
-# LOAD LORA
-# ============================================================
-
-base_model = AutoModelForCausalLM.from_pretrained(
-    MODEL_PATH,
-    device_map="auto"
-)
-
-model = PeftModel.from_pretrained(
-    base_model,
-    "../outputs/checkpoints"
-)
+gpu = get_gpu_info()
 
 # ============================================================
-# REPORT SETUP
+# REPORT
 # ============================================================
 
-report_lines = []
-report_lines.append("=" * 80)
-report_lines.append("BEACON EVALUATION REPORT")
-report_lines.append("=" * 80)
-report_lines.append(f"Timestamp: {timestamp_str}")
-report_lines.append(f"Model: {MODEL_PATH}")
-report_lines.append(f"GPU: {gpu_info['gpu_name']}")
-report_lines.append("")
+report = []
+report.append("="*80)
+report.append("BEACON EVALUATION REPORT")
+report.append("="*80)
+report.append(f"Time: {ts}")
+report.append(f"Model: {MODEL_PATH}")
+report.append(f"Mode: {mode}")
+report.append(f"GPU: {gpu['gpu_name']}\n")
+
+total_t, total_tok = 0, 0
 
 # ============================================================
-# STATISTICS
+# LOOP
 # ============================================================
 
-total_generation_time = 0
-total_generated_tokens = 0
-total_tokens_per_second = 0
+print("\n=== EVALUATION START ===\n")
 
-prompt_count = len(prompts)
+for i, item in enumerate(prompts, 1):
 
-# ============================================================
-# RUN TESTS
-# ============================================================
+    prompt = prefix + (item["prompt"] if isinstance(item, dict) else item)
+    category = item.get("category", "uncategorized") if isinstance(item, dict) else "uncategorized"
 
-print()
-print("=" * 60)
-print("BEACON EVALUATION")
-print("=" * 60)
-print()
+    text = tokenizer.apply_chat_template([{"role":"user","content":prompt}], tokenize=False, add_generation_prompt=True)
 
-for index, item in enumerate(prompts, start=1):
-    if isinstance(item, dict):
-        prompt = "/no_think\n" + item["prompt"]
+    inputs = tokenizer(text, return_tensors="pt").to(model.device)
+    p_tokens = inputs.input_ids.shape[1]
 
-        category = item.get("category", "uncategorized")
+    start = time.perf_counter()
+    out = model.generate(**inputs, **GENERATION_CONFIG)
+    t = time.perf_counter() - start
 
-    else:
+    gen = out[0][p_tokens:]
+    tok = len(gen)
 
-        prompt = item
-        category = "uncategorized"
+    resp = tokenizer.decode(gen, skip_special_tokens=True)
 
-    messages = [
-        {
-            "role": "user",
-            "content": prompt
-        }
-    ]
+    total_t += t
+    total_tok += tok
 
-    text = tokenizer.apply_chat_template(
-        messages,
-        tokenize=False,
-        add_generation_prompt=True
-    )
+    print(f"[{i}/{len(prompts)}] {tok} tok | {t:.2f}s")
 
-    inputs = tokenizer(
-        text,
-        return_tensors="pt"
-    ).to(model.device)
-
-    prompt_tokens = (inputs.input_ids.shape[1])
-    start_time = time.perf_counter()
-    outputs = model.generate(**inputs, **GENERATION_CONFIG)
-
-    generation_time = (time.perf_counter() -start_time)
-    
-    generated = outputs[0][
-        prompt_tokens:
-    ]
-
-    generated_tokens = len(generated)
-    tokens_per_second = generated_tokens / generation_time
-
-    response = tokenizer.decode(
-        generated,
-        skip_special_tokens=True
-    )
-
-    # --------------------------
-    # Statistics
-    # --------------------------
-
-    total_generation_time += generation_time
-    total_generated_tokens += generated_tokens
-    total_tokens_per_second += tokens_per_second
-
-    # --------------------------
-    # Terminal
-    # --------------------------
-
-    print(
-        f"[{index}/{prompt_count}] "
-        f"{prompt}"
-    )
-
-    print(
-        f"✓ {generated_tokens} tokens | "
-        f"{generation_time:.2f}s"
-    )
-
-    print()
-
-    # --------------------------
-    # Report
-    # --------------------------
-
-    report_lines.extend([
-        "=" * 80,
-        f"TEST #{index}",
-        "=" * 80,
-        "",
-        f"Category: {category}",
-        "",
-        "Prompt:",
-        prompt,
-        "",
-        "Response:",
-        response,
-        "",
-        f"Prompt Tokens: {prompt_tokens}",
-        f"Generated Tokens: {generated_tokens}",
-        f"Generation Time: {generation_time:.2f}s",
-        f"Tokens/sec: {tokens_per_second:.2f}",
-        ""
-    ])
+    report.append("="*80)
+    report.append(f"TEST {i} | {category}")
+    report.append(f"Prompt: {prompt}")
+    report.append(f"Response: {resp}")
+    report.append(f"Tokens: {tok} | Time: {t:.2f}s | TPS: {tok/t:.2f}\n")
 
 # ============================================================
 # SUMMARY
 # ============================================================
 
-average_time = total_generation_time / prompt_count
-average_tokens_per_second = total_tokens_per_second / prompt_count
-
-report_lines.extend([
-    "=" * 80,
-    "SUMMARY",
-    "=" * 80,
-    "",
-    f"Prompts Tested: {prompt_count}",
-    f"Total Generated Tokens: {total_generated_tokens}",
-    f"Total Generation Time: {total_generation_time:.2f}s",
-    f"Average Generation Time: {average_time:.2f}s",
-    f"Average Tokens/sec: {average_tokens_per_second:.2f}",
-    ""
-])
+report.append("="*80)
+report.append("SUMMARY")
+report.append("="*80)
+report.append(f"Prompts: {len(prompts)}")
+report.append(f"Total Tokens: {total_tok}")
+report.append(f"Total Time: {total_t:.2f}s")
+report.append(f"Avg TPS: {total_tok/total_t:.2f}")
 
 # ============================================================
-# SAVE REPORT
+# SAVE
 # ============================================================
 
-report_path = (
-    f"../outputs/evaluations/results/"
-    f"e{report_date}.txt"
-)
+Path(f"../outputs/evaluations/results/e{date}.txt").write_text("\n".join(report), encoding="utf-8")
 
-with open(
-    report_path,
-    "a",
-    encoding="utf-8"
-) as file:
-
-    file.write(
-        "\n".join(report_lines)
-    )
-
-    file.write("\n\n")
-
-# ============================================================
-# TERMINAL SUMMARY
-# ============================================================
-
-print("=" * 60)
-print("Completed")
-print("=" * 60)
-
-print(
-    f"Prompts Tested : "
-    f"{prompt_count}"
-)
-
-print(
-    f"Total Tokens   : "
-    f"{total_generated_tokens}"
-)
-
-print(
-    f"Average Speed  : "
-    f"{average_tokens_per_second:.2f} tok/s"
-)
-
-print(
-    f"Total Time     : "
-    f"{total_generation_time:.2f}s"
-)
-
-print(
-    f"Report Saved   : "
-    f"{report_path}"
-)
-
-print("=" * 60)
+print("\n=== DONE ===")
+print(f"Report saved: e{date}.txt")
