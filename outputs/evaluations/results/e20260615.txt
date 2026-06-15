@@ -1,0 +1,191 @@
+================================================================================
+BEACON EVALUATION REPORT
+================================================================================
+Timestamp: 2026-06-15 20:59:20
+Model: ../models/qwen3-4b
+GPU: NVIDIA GeForce RTX 5060 Ti
+
+================================================================================
+TEST #1
+================================================================================
+
+Category: uncategorized
+
+Prompt:
+မင်္ဂလာပါ
+
+Response:
+<think>
+Okay, the user said "မင်္ဂလာပါ" which is Burmese for "Hello". I need to respond in a friendly and welcoming manner. Since they used Burmese, maybe they prefer responses in Burmese as well? Or perhaps they want an English response. Let me check.
+
+The user might be testing if I can understand Burmese or just starting a conversation. Either way, I should acknowledge their greeting and offer help. Maybe say hello back in Burmese and then switch to English to be inclusive. That way, it's clear I'm ready to assist regardless of language preference.
+
+So, first reply in Burmese: မင်္ဂလာပါ။ Then in English: Hello! How can I assist you today? That covers both languages and shows willingness to help.
+</think>
+
+မင်္ဂလာပါ။  
+Hello! How can I assist you today? 😊
+
+Prompt Tokens: 21
+Generated Tokens: 213
+Generation Time: 12.26s
+Tokens/sec: 17.38
+
+================================================================================
+TEST #2
+================================================================================
+
+Category: uncategorized
+
+Prompt:
+နေကောင်းလား
+
+Response:
+<think>
+Okay, the user asked "နေကောင်းလာဲ" which is in Burmese. Let me check if that's a typo. Maybe they meant "နေကောင်းလာပါသည်" (It's a nice day) or something similar.
+
+First, I should confirm the correct spelling of their message to understand better. Since it's possible there's a mistake, maybe they intended to ask about the weather or if the day is good. 
+
+I need to respond politely and offer assistance. Perhaps start by acknowledging their question and asking for clarification if needed. Then provide information based on current conditions. But wait, do I have access to real-time data? No, my knowledge is up to 2023, so I can't give live updates. So I should mention that I can't check the weather right now but can help with other things related to the topic.
+
+Also, make sure the response is friendly and open-ended to encourage them to ask more questions. Avoid any technical jargon and keep it simple.
+</think>
+
+အထူးရှိမယ့် စွဲခြင်းဖြစ်ပါတယ်။ ဒီနေရာမှာ အခုအချိန်မှာ နေကောင်းလာပါသလားဆိုတာ မသိပါဘူး။ သင့်ကို အကူအHelp ပြုပေးနိုင်ပါတယ်။ သင့်ကို မေးမြန်းသော အရာများကို အထူးသဖြင့် ပြန်လည်အကူအHelp ပေးပါလိမ့
+
+Prompt Tokens: 26
+Generated Tokens: 512
+Generation Time: 25.79s
+Tokens/sec: 19.86
+
+================================================================================
+TEST #3
+================================================================================
+
+Category: uncategorized
+
+Prompt:
+ကွန်ပျူတာဆိုတာဘာလဲ
+
+Response:
+<think>
+Okay, the user is asking what a computer is. Let me start by defining it clearly. A computer is an electronic device that processes data. I should mention its main components like the CPU, memory, storage, and input/output devices.
+
+I need to explain how it works in simple terms. Maybe use an analogy, like a brain for humans. Also, highlight its uses—like calculating, storing information, running software. It's important to note that computers can be personal (desktops, laptops) or large (servers, supercomputers).
+
+Don't forget to mention different types of computers and their purposes. Maybe include examples like smartphones, tablets as well. Make sure the explanation is easy to understand without too much technical jargon. Check if there are any common misconceptions to address, like thinking a computer is just for typing documents. Emphasize versatility in tasks from basic to complex.
+</think>
+
+ကွန်ပျူတာ (Computer) သည် အခြေခံမှုဖြင့် ထုတ်လုပ်ရန် သို့မဟုတ် စီးပွားရေး၊ ပညာရှိများ၏ အလုပ်အတွက် အသုံးပြုနိုင်သော အရာများကို စီးပွားရေးတွင် အသုံးပြုနိုင်သော ဓါတ်ပုံများဖြစ်ပါသည်။ အခြေခံမှုဖြင့် ကွန်ပျူတာများသည် လုပ်ဆောင်မှု
+
+Prompt Tokens: 36
+Generated Tokens: 512
+Generation Time: 25.27s
+Tokens/sec: 20.26
+
+================================================================================
+TEST #4
+================================================================================
+
+Category: uncategorized
+
+Prompt:
+ရန်ကုန်မြို့အကြောင်း ပြောပြပါ
+
+Response:
+<think>
+Okay, the user asked for information about Rangoon (Yangon), the capital of Myanmar. Let me start by recalling what I know.
+
+First, Yangon is a major city in Myanmar, known as the country's economic and cultural hub. It has a long history, dating back to ancient times when it was part of various kingdoms like the Pagan Kingdom. The British colonial period significantly influenced its development, especially with the construction of the Shwedagon Pagoda and other infrastructure.
+
+I should mention key landmarks: the Shwedagon Pagoda, which is one of the most important Buddhist sites. Then there's the Royal Palace, where the president resides. The downtown area, like the old market and the Suleiman Mosque, are also notable. The city has a bustling port on the Irrawaddy River, which is crucial for trade.
+
+Economically, Yangon is a center for industry, banking, and commerce. However, it faces challenges like traffic congestion, pollution, and urbanization issues. There's also a mix of traditional and modern elements, with markets selling everything from street food to luxury goods.
+
+I need to highlight both the historical significance and current state. Maybe touch on tourism aspects, such as visiting temples, trying local cuisine like mango sticky rice or seafood. Also, note that despite being a big city, it still retains some traditional culture.
+
+Wait, did I miss any important points? Oh right, the population size—around 10 million people. Also, the city's role in the post-coup situation might be relevant, but maybe that's more recent and not necessary unless specified. Since the question is general, stick to basic info without political details.
+
+Check if there are any common misconceptions. For example, sometimes people confuse Yangon with Bagan, so clarify that Yangon is the capital while Bagan is an archaeological site nearby. Also, make sure to mention the main attractions again clearly.
+</think>
+
+ရန်ကုန် (သို့မဟုတ် ယူနစ်ကုန်) သည် မွန်လျှံနိုင်ငံ၏ ဖိုင်းရေး၊ စီးပွားရေးနှင့် ဓ
+
+Prompt Tokens: 54
+Generated Tokens: 512
+Generation Time: 24.90s
+Tokens/sec: 20.57
+
+================================================================================
+TEST #5
+================================================================================
+
+Category: uncategorized
+
+Prompt:
+ယနေ့ ရာသီဥတု ဘယ်လိုရှိလဲ
+
+Response:
+<think>
+Okay, the user is asking about today's weather. First, I need to check what date they're referring to. Since the current date is October 25, 2023, I should provide information for that day.
+
+I remember that in Myanmar, the weather can vary a lot depending on the region and season. Today is a Tuesday, so maybe there are some seasonal patterns. But wait, I need to be precise. Let me think... In late October, it's usually transitioning from the rainy season to the dry season in many parts of Southeast Asia, including Myanmar. However, specific regions might have different conditions.
+
+Wait, but I don't have real-time data access. The last time I had accurate weather info was around mid-October. Maybe I should mention that I can't give live updates but can share general trends or typical weather for that period. Alternatively, if the user is in a specific area, like Yangon or Mandalay, I could suggest checking local sources.
+
+Also, considering the user might not know where they are, providing a general overview would be helpful. For example, mentioning possible temperature ranges, humidity levels, and precipitation chances. But since I can't confirm exact details, I should advise them to check a reliable weather app or website for up-to-date information.
+</think>
+
+ယခုအချက်အလက်များအရ ယနေ့ (၂၅ ဖေဖော်ဝါရီ၊ ၂၀၂၃) ရာသီဥတုသည် ပြင်ပတွင် အဆိုပါ စံချက်များကို ထုတ်ပြန်ရန် မရှိပါ။ သင့်ရဲ့ နေရာကို သိရန် မှတ်ပုံတို့ကို ဖြည့်စွက်ပေးပါ။ နေ့လ
+
+Prompt Tokens: 44
+Generated Tokens: 512
+Generation Time: 24.95s
+Tokens/sec: 20.52
+
+================================================================================
+TEST #6
+================================================================================
+
+Category: uncategorized
+
+Prompt:
+ကျောင်းသားတစ်ယောက်ရဲ့ တာဝန်တွေက ဘာတွေလဲ
+
+Response:
+<think>
+Okay, the user is asking about the responsibilities of a student. Let me start by recalling what I know. Students have various duties that help them succeed academically and personally.
+
+First, academic responsibility comes to mind. That includes attending classes regularly, completing homework on time, participating in discussions, and preparing for exams. But maybe there's more to it than just academics. 
+
+Then there's personal development. Students need to manage their time effectively, balance studies with extracurricular activities, and take care of their health. Maybe also developing good study habits and seeking help when needed.
+
+Social responsibilities might be part of it too. Building relationships with peers, collaborating on group projects, and contributing positively to the school community. Also, respecting others and following school rules.
+
+Financial responsibility could be another aspect if they're managing their own expenses, like buying supplies or using school resources wisely. 
+
+I should make sure not to miss any key points. Perhaps mention punctuality, honesty, and being responsible for their actions. Also, maybe include things like staying updated with assignments and utilizing available resources like libraries or tutoring services.
+
+Wait, are there cultural aspects? In some schools, students might have additional roles like leading clubs or helping younger students. Should I include that? The question is general, so maybe keep it broad but comprehensive.
+
+Let me organize these thoughts into categories: Academic, Personal Development, Social, Financial, and Ethical Responsibilities. That way, the answer is structured and covers all bases.
+</think>
+
+ကျောင်းသား/မိန်းကလေးတစ်ယောက်၏ အဓိက တာဝန်မှာ ပညာသင်ခံရခြင်း၊ သင်ကြားပုံစံကို ဖြည့်ဆိုင်းခြင်းနှင့် လူမျိုးတွင် အထူးသဖြင့် အထူးသဖြင့် အိမ်မွ�
+
+Prompt Tokens: 68
+Generated Tokens: 512
+Generation Time: 24.68s
+Tokens/sec: 20.75
+
+================================================================================
+SUMMARY
+================================================================================
+
+Prompts Tested: 6
+Total Generated Tokens: 2773
+Total Generation Time: 137.84s
+Average Generation Time: 22.97s
+Average Tokens/sec: 19.89
+
+
