@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # BEACON PROJECT
 As artificial intelligence continues to evolve year after year, we, as Myanmar, an underdeveloped country, aim to assist our citizens in effectively utilizing AI in our native language.
 
@@ -81,7 +80,3 @@ pip install -r requirements.txt
 | Qwen3-14B  | 14B        | 24–48 GB VRAM          | High-quality assistant     |
 | Qwen3-32B  | 32B        | 48–80 GB VRAM          | Enterprise/research        |
 | Qwen3-72B  | 72B        | Multi-GPU 160+ GB VRAM | Large-scale training       |
-=======
-# beacon-project
-As artificial intelligence continues to evolve year after year, we, as Myanmar, an underdeveloped country, aim to assist our citizens in effectively utilizing AI in our native language.
->>>>>>> cd88b521141aa77a0275f2d3e6bf80bb15a1dcb7
