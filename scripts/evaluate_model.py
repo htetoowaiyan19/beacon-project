@@ -1,5 +1,6 @@
 # train ထားသော AI အား evaluation ဖြင့် prompts အများအပြားသုံးခါ စမ်းသပ်ရာတွင် သုံးသော script ဖြစ်သည်။
 
+import sys
 import json
 import time
 
@@ -10,6 +11,8 @@ from transformers import (
     AutoModelForCausalLM
 )
 
+from peft import PeftModel
+
 from utils.generation_utils import GENERATION_CONFIG
 from utils.model_utils import get_gpu_info
 
@@ -19,6 +22,34 @@ from utils.model_utils import get_gpu_info
 
 MODEL_PATH = "../models/qwen3-4b"
 PROMPTS_FILE = ("../prompts/evaluation_prompts.json") # ဤနေရာတွင် evaluation အတွက် အသုံးပြုမည့် prompts များပြင်နိုင်သည်။
+
+# ============================================================
+# ARGUMENTS
+# ============================================================
+
+if len(sys.argv) < 2:
+    print(
+        "Usage:\n"
+        "python evaluate_model.py --think\n"
+        "python evaluate_model.py --nothink"
+    )
+    sys.exit(1)
+
+mode = sys.argv[1]
+
+VALID_MODES = [
+    "--think",
+    "--nothink"
+]
+
+if mode not in VALID_MODES:
+
+    print(
+        "Invalid mode.\n"
+        "Use --think or --nothink"
+    )
+
+    sys.exit(1)
 
 # ============================================================
 # TIMESTAMP
@@ -55,6 +86,20 @@ model = AutoModelForCausalLM.from_pretrained(
 gpu_info = get_gpu_info()
 
 # ============================================================
+# LOAD LORA
+# ============================================================
+
+base_model = AutoModelForCausalLM.from_pretrained(
+    MODEL_PATH,
+    device_map="auto"
+)
+
+model = PeftModel.from_pretrained(
+    base_model,
+    "../outputs/checkpoints"
+)
+
+# ============================================================
 # REPORT SETUP
 # ============================================================
 
@@ -89,7 +134,7 @@ print()
 
 for index, item in enumerate(prompts, start=1):
     if isinstance(item, dict):
-        prompt = item["prompt"]
+        prompt = "/no_think\n" + item["prompt"]
 
         category = item.get("category", "uncategorized")
 
