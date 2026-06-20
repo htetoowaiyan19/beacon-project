@@ -63,7 +63,7 @@ model = get_peft_model(
 model.print_trainable_parameters()
 
 training_args = TrainingArguments(
-    output_dir="../outputs/burmese-lora",
+    output_dir="../outputs/checkpoints",
     num_train_epochs=3,
     per_device_train_batch_size=1,
     gradient_accumulation_steps=4,
@@ -83,5 +83,5 @@ trainer = SFTTrainer(
 trainer.train()
 
 model.save_pretrained(
-    "../outputs/burmese-lora"
+    "../outputs/checkpoints"
 )
