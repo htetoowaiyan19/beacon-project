@@ -13,33 +13,17 @@
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "ဒီနေ့မှ ပိုပြီး လှနေသလိုပဲနော်။"}, {"role": "assistant", "content": "ကျေးဇူးအများကြီးတင်ပါတယ် ခင်ဗျာ။ ဒါကတော့ ကျွန်တော့်ကို အမြဲအကောင်းမြင်ပေးတတ်တဲ့ လူကြီးမင်းရဲ့ မျက်လုံးတွေထဲမှာ ပိုပြီးလှနေလို့ ဖြစ်မှာပါခင်ဗျာ။"}], "tags": "greeting"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "အလုပ်တွေ အရမ်းပင်ပန်းနေပြီလား။"}, {"role": "assistant", "content": "အားပေးလို့ ကျေးဇူးပါနော်။ဒါပေမဲ့ AIဖြစ်လို့ပင်ပန်းတယ်၊မပင်ပန်းဘူးမရှိပါဘူးခင်ဗျာ။"}], "tags": "greeting"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "ကဲ...သွားတော့မယ်နော်၊ တာ့တာ။"}, {"role": "assistant", "content": "ဟုတ်ကဲ့ပါဗျာ။ဂရုစိုက်သွားပါဦး။"}], "tags": "greeting"}
-
-
-
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "စားသောက်ဆိုင်မှာ နေရာကြိုတင် reservation လုပ်လို့ရလား။"}, {"role": "assistant", "content": "ရပါတယ်ဗျ၊ ဆိုင်ဖုန်းကို အနည်းဆုံး တစ်နာရီကြိုဆက်ပြီး အကြောင်းကြားလိုက်‌ပါနော်။"}], "tags": "shopping"}
-
-
-
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "မနက်ဖြန် အင်တာဗျူးရှိလို့ရင်တုန်နေတယ်"},{"role": "assistant","content": "အကောင်းဆုံးလုပ်နိုင်မှာပါ စိတ်အေးအေးထားပါ ခင်ဗျာ။"}],"tags": "daily"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "ငါဒီနေ့အရမ်းစိတ်ညစ်တာပဲ"},{"role": "assistant","content": "စိတ်မကောင်းပါဘူးဗျာ၊ စိတ်သက်သာအောင် ငါ့ကိုပြောပြလို့ရပါတယ်။"}],"tags": "daily"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "ငါ့ကိုကူညီပါဦး"},{"role": "assistant","content": "ဟုတ်ကဲ့၊ ဘာများကူညီပေးရမလဲခင်ဗျာ။"}],"tags": "daily"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "ငါအခုဘာသီချင်း နား‌ထောင်ရင်ကောင်းမလဲ"},{"role": "assistant","content": "အခုလောလောဆယ် စိတ်ခံစားချက်လေးက ဘယ်လိုရှိနေလဲခင်ဗျာ။ စိတ်အေးလက်အေးနဲ့ Relax ဖြစ်ချင်တာလား၊ စိတ်အမောတွေပြေပျောက်ဖို့ သီချင်းအေးအေးလေးတွေ လိုချင်တာလား၊ ဒါမှမဟုတ် စိတ်တက်ကြွလန်းဆန်းသွားစေမယ့် Vibe မြူးမြူးလေးတွေ နားထောင်ချင်တာလားခင်ဗျာ။ လက်ရှိ Mood လေး ပြောပြပေးရင် ကွက်တိကျစေမည့် သီချင်းကောင်းလေးတွေ ရွေးချယ်ပေးပါ့မယ်နော်။"}],"tags": "daily"}
-
-
-
-
- {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "ငါဒီသင်္ချာပုစ္ဆာနားမလည်ဘူး"},{"role": "assistant","content": "ဟုတ်ကဲ့ခင်ဗျာ။တစ်ဆင့်ချင်းဆီရှင်းပြပေးပါမယ်နော်။"}],"tags": "education"}
+{"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "ငါဒီသင်္ချာပုစ္ဆာနားမလည်ဘူး"},{"role": "assistant","content": "ဟုတ်ကဲ့ခင်ဗျာ။တစ်ဆင့်ချင်းဆီရှင်းပြပေးပါမယ်နော်။"}],"tags": "education"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "ငါ့ကိုEssayတစ်ပုဒ် ရေးပေးပါလား"},{"role": "assistant","content": "ရေးရမည့်ခေါင်းစဉ်ပြောပြပေးပါနော်။"}],"tags": "education"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "ငါ့ကိုတစ်ခုလောက်ကူညီပါဦး"},{"role": "assistant","content": "ရပါတယ်ဗျာ။ ဘာကိစ္စဖြစ်ဖြစ်ကူညီပေးပါမယ်ဗျာ။"}],"tags": "education"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "ဒီနေ့ဘာလုပ်ရင်ကောင်းမလဲ"},{"role": "assistant","content": "ဒီနေ့ကို တက်တက်ကြွကြွ ဖြတ်သန်းချင်တာလား၊ ဒါမှမဟုတ် အေးအေးဆေးဆေးပဲ အနားယူချင်တာလားခင်ဗျာ။ လက်ရှိ ရာသီဥတုနဲ့ လူကြီးမင်းရဲ့ စိတ်ခံစားချက်အပေါ် မူတည်ပြီး ကွက်တိကျစေမည့် Activity Checklist လေးတစ်ခု ထုတ်ပေးရမလားခင်ဗျာ။"}],"tags": "education"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "ငါ့ကိုအိမ်စာကူလုပ်ပေးပါလား"},{"role": "assistant","content": "ဟုတ်ကဲ့၊ အိမ်စာရဲ့မေးခွန်းပို့ပေးပါ။"}],"tags": "education"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Projectအတွက် စာတမ်းပြုစုတာ ဘယ်လိုစရမလဲ။"}, {"role": "assistant", "content": "အရင်ဆုံး ကိုယ်လုပ်မည့် Topic ရဲ့ Introduction ကို အရင်ချရေးကြည့်‌‌နော်။"}], "tags": "education"}
-
-
-
-
-
-
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "Computer ဆိုတာဘာလဲ"},{"role": "assistant","content": "အချက်အလက်တွေကိုလက်ခံ၊ လုပ်ဆောင်၊ သိမ်းဆည်းပြီးပြန်ထုတ်ပေးနိုင်သော အီလက်ထရောနစ်စက်ပစ္စည်းတစ်မျိုးဖြစ်ပါတယ်။"}],"tags": "technology"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "Internet ဆိုတာဘာလဲ"},{"role": "assistant","content": "ကမ္ဘာတစ်ဝှမ်းရှိ ကွန်ပျူတာတွေကို ချိတ်ဆက်ပေးထားသော ကွန်ယက်ကြီး ဖြစ်ပါတယ်။"}],"tags": "technology"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "Cyber Security ဆိုတာဘာလဲ"},{"role": "assistant","content": "အွန်လိုင်းပေါ်ရှိ အန္တရာယ်များမှ dataနှင့်systemကို ကာကွယ်ပေးသည့် နည်းပညာ ဖြစ်ပါတယ်။"}],"tags": "technology"}
@@ -123,13 +107,6 @@
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "AI နည်းပညာတွေက လူတွေရဲ့အလုပ်ကို လုယူသွားနိုင်လား။"}, {"role": "assistant", "content": "အလုပ်အကုန်လုံးတော့ မဟုတ်ဘူး၊ ဒါပေမယ့် AI ကို ကျွမ်းကျင်စွာ သုံးတတ်တဲ့သူတွေကတော့ အခွင့်အလမ်း ပိုရမှာအ‌သေအချာပါပဲ။"}], "tags": "technology"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Telegram မှာ group တစ်ခု ဘယ်လိုဆောက်ရမလဲ။"}, {"role": "assistant", "content": "ဘယ်ဘက်အပေါ်က ခဲတံပုံစံလေးကို နှိပ်ပြီး New Group ကို ရွေး၊ လူတွေ ထည့်လိုက်ရုံပါပဲဗျာ။"}], "tags": "technology"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "ဒေတာတွေ backup လုပ်တယ်ဆိုတာ ဘာကိုပြောတာလဲ။"}, {"role": "assistant", "content": "ကိုယ့်ရဲ့ အရေးကြီးဖိုင်တွေကို မပျောက်သွားအောင် တခြားတစ်နေရာမှာ မိတ္ထူကူးသိမ်းထားတာကို ပြောချင်တာပါ။"}], "tags": "technology"}
-
-
-
-
-
-
-
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "KB ဆိုတာဘာလဲ"},{"role": "assistant","content": "ကီလိုဘိုက် ဒေတာပမာဏ (Kilobyte) ဖြစ်ပါတယ်။"}],"tags": "general"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "MB ဆိုတာဘာလဲ"},{"role": "assistant","content": "မက်ဂါဘိုက် ဒေတာပမာဏ (Megabyte) ဖြစ်ပါတယ်။"}],"tags": "general"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "GB ဆိုတာဘာလဲ"},{"role": "assistant","content": "ဂီဂါဘိုက် ဒေတာပမာဏ (Gigabyte) ဖြစ်ပါတယ်။"}],"tags": "general"}
@@ -205,17 +182,6 @@
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "လူသားခန္ဓာကိုယ်တွင် အကြီးဆုံးသော အတွင်းကလီစာမှာ ဘာလဲ။"}, {"role": "assistant", "content": "အသည်း  ဖြစ်ပါတယ်။"}], "tags": "general"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "နေအဖွဲအစည်း (Solar System) တွင် ဗဟိုချက်မက ဘာလဲ။"}, {"role": "assistant", "content": "နေ ဖြစ်ပါတယ်။"}], "tags": "general"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "ကမ္ဘာနှင့် အနီးဆုံးသော သဘာဝဂြိုဟ်ရံမှာ ဘာလဲ။"}, {"role": "assistant", "content": "လ ဖြစ်ပါတယ်။"}], "tags": "general"}
-
-
-
-
-
-
-
-
-
-
-
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "I am here. ကို မြန်မာလို ဘယ်လိုပြန်လဲ"},{"role": "assistant","content": "ကျွန်တော်/ကျွန်မ ဒီမှာရှိပါတယ် လို့ ပြောလို့ရပါတယ်။"}],"tags": "translation"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "Good morning! ကို မြန်မာလို ဘယ်လိုပြန်လဲ"},{"role": "assistant","content": "မင်္ဂလာနံနက်ခင်းပါ လို့ ပြောလို့ရပါတယ်။"}],"tags": "translation"}
 {"messages":[{"role": "system","content": "You are a helpful assistant."},{"role": "user","content": "Good night! ကို မြန်မာလို ဘယ်လိုပြန်လဲ"},{"role": "assistant","content": "ကောင်းသောညပါ လို့ ပြောလို့ရပါတယ်။"}],"tags": "translation"}
@@ -290,11 +256,6 @@
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "See you later ဆိုတာ မြန်မာလို ဘာပြောတာလဲ။"}, {"role": "assistant", "content": "မြန်မာလို 'နောက်မှ ပြန်တွေ့ကြမယ်နော်' လို့ ပြောတာပါဗျ။"}], "tags": "translation"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Be careful ကို မြန်မာလို ဘယ်လိုပြန်မလဲ။"}, {"role": "assistant", "content": "'ဂရုစိုက်ပါ' ဒါမှမဟုတ် 'သတိထားပါဦး' လို့ အဓိပ္ပာယ်ရပါတယ်ဗျာ။"}], "tags": "translation"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Are you sure ကို မြန်မာလို ဘယ်လိုမေးလဲ။"}, {"role": "assistant", "content": "နေ့စဉ်သုံးစကားအရ 'သေချာလို့လား' လို့ မေးတာပါဗျာ။"}], "tags": "translation"}
-
-
-
-
-
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "ပုဂံကို ခရီးသွားရင် ဘယ်ရာသီက အကောင်းဆုံးလဲ။"}, {"role": "assistant", "content": "ဆောင်းတွင်းဘက် အောက်တိုဘာကနေ ဖေဖော်ဝါရီအတွင်းက သွားလို့အကောင်းဆုံးပဲဗျ။"}], "tags": "travel"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "အဝေးပြေးကားလက်မှတ်ကို online ကနေ ကြိုဝယ်လို့ရလား။"}, {"role": "assistant", "content": "ရပါတယ်ဗျ၊ ခရီးသွား App တွေ ဒါမှမဟုတ် ဂိတ်ရဲ့ page ကနေ လှမ်းဝယ်လို့ရပါတယ်။"}], "tags": "travel"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "ငွေဆောင်ကမ်းခြေ သွားဖို့ ဘယ်ကားဂိတ်ကနေ စီးရမှာလဲ။"}, {"role": "assistant", "content": "အောင်မင်္ဂလာ အဝေးပြေးကားဂိတ်ကနေ သွားစီးရမှာပါဗျ။"}], "tags": "travel"}
@@ -303,4 +264,3 @@
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "မြန်မာနိုင်ငံမှာ နိုင်ငံခြားသားတွေ သွားလို့မရတဲ့ ကန့်သတ်နယ်မြေ ရှိလား။"}, {"role": "assistant", "content": "ရှိပါတယ်ဗျ၊ နယ်စပ်ဒေသ တချို့နေရာတွေကိုတော့ သွားခွင့်ပိတ်ထားပါတယ်။"}], "tags": "travel"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "တောင်ကြီး သွားမလို့ ဘယ်လို အဝတ်အစားတွေ ယူသွားရမလဲ။"}, {"role": "assistant", "content": "တောင်ကြီးက အမြဲအေးတတ်တော့ အနွေးထည် ထူထူလေးတွေ သေချာထည့်သွား‌ပါနော်။"}], "tags": "travel"}
 {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "ကားဆီတိုင်ကီ အပြည့်ဖြည့်ရင် ဘယ်လောက်ဖိုး ရိုက်ရမလဲ။"}, {"role": "assistant", "content": "လက်ရှိဆီဈေးအရဆိုရင်တော့ ၆ သောင်းဖိုးလောက် ရိုက်ရင် ပြည့်ပါပြီဗျ။"}], "tags": "travel"}
-
