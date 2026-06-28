@@ -31,7 +31,7 @@ def format_chat(example):
 
 dataset = load_dataset(
     "json",
-    data_files="../datasets/clean/train/train_preloaded_273.jsonl" # မိမိ train လိုသော dataset ရဲ့ path
+    data_files="../datasets/clean/train/data_clean.jsonl" # မိမိ train လိုသော dataset ရဲ့ path
 )
 
 dataset = dataset.map(format_chat)
