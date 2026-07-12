@@ -1,22 +1,39 @@
-# Model ကို မိမိ Computer ပေါ်သို့ Download လုပ်ရန် Script ဖြစ်ပါတယ်။ Hugging Face မှာရှိတဲ့ Open-Souce Model မှန်သမျှကို download နိုင်ပါတယ်။
+"""Download and cache the base model locally."""
 
-from transformers import AutoTokenizer
-from transformers import AutoModelForCausalLM
+from __future__ import annotations
 
-model_name = "Qwen/Qwen3-4B" # Model Name
-save_path = "../models/qwen3-4b" # Save လုပ်မဲ့ path
+from pathlib import Path
 
-print("Loading tokenizer...")
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-print("Loading model...")
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    device_map="auto"
-)
 
-print("Saving...")
-tokenizer.save_pretrained(save_path)
-model.save_pretrained(save_path)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+MODEL_NAME = "Qwen/Qwen3-4B"
+SAVE_PATH = PROJECT_ROOT / "models" / "qwen3-4b"
 
-print("Done!")
+
+def main() -> None:
+    dtype = torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else "auto"
+
+    print("Loading tokenizer...")
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+
+    print("Loading model...")
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_NAME,
+        torch_dtype=dtype,
+        attn_implementation="sdpa",
+        device_map="auto",
+    )
+
+    print(f"Saving to {SAVE_PATH}...")
+    SAVE_PATH.mkdir(parents=True, exist_ok=True)
+    tokenizer.save_pretrained(SAVE_PATH)
+    model.save_pretrained(SAVE_PATH, safe_serialization=True)
+
+    print("Done!")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,127 +1,154 @@
-# train ထားသော AI အား evaluation ဖြင့် prompts အများအပြားသုံးခါ စမ်းသပ်ရာတွင် သုံးသော script ဖြစ်သည်။
+"""Evaluate the LoRA model against the prompt set."""
 
-import sys, json, time
-from pathlib import Path
+from __future__ import annotations
+
+import json
+import time
 from datetime import datetime
-import torch
+from pathlib import Path
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
 from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from utils.generation_utils import GENERATION_CONFIG
 from utils.model_utils import get_gpu_info
 
-# ============================================================
-# CONFIG
-# ============================================================
 
-MODEL_PATH = "../models/qwen3-4b"
-LORA_PATH = "../outputs/checkpoints"
-PROMPTS_FILE = "../prompts/evaluation_prompts.json" # Evaluate လုပ်မည့် prompts များရှိသည့် json file
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+MODEL_PATH = PROJECT_ROOT / "models" / "qwen3-4b"
+LORA_PATH = PROJECT_ROOT / "outputs" / "checkpoints"
+PROMPTS_FILE = PROJECT_ROOT / "prompts" / "evaluation_prompts.json"
+RESULTS_DIR = PROJECT_ROOT / "outputs" / "evaluations" / "results"
+VALID_MODES = {"--think", "--nothink"}
 
-# ============================================================
-# ARGUMENTS
-# ============================================================
 
-if len(sys.argv) < 2: print("Usage: python evaluate_model.py --think|--nothink"); sys.exit(1)
-mode = sys.argv[1]
-if mode not in ["--think", "--nothink"]: print("Invalid mode"); sys.exit(1)
-prefix = "/no_think\n" if mode == "--nothink" else ""
+def get_inference_dtype() -> torch.dtype | str:
+    if not torch.cuda.is_available():
+        return "auto"
+    return torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
 
-# ============================================================
-# TIME + PROMPTS
-# ============================================================
 
-now = datetime.now()
-ts, date = now.strftime("%Y-%m-%d %H:%M:%S"), now.strftime("%Y%m%d")
+def load_prompts() -> list[dict | str]:
+    with PROMPTS_FILE.open("r", encoding="utf-8") as file:
+        return json.load(file)
 
-prompts = json.load(open(PROMPTS_FILE, "r", encoding="utf-8"))
 
-Path("../outputs/evaluations/results").mkdir(parents=True, exist_ok=True)
+def parse_mode(argv: list[str]) -> str:
+    if len(argv) < 2:
+        raise SystemExit("Usage: python evaluate_model.py --think|--nothink")
 
-# ============================================================
-# LOAD MODEL (BASE + LORA)
-# ============================================================
+    mode = argv[1]
+    if mode not in VALID_MODES:
+        raise SystemExit("Invalid mode. Use --think or --nothink")
 
-print("Loading tokenizer...")
-tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+    return mode
 
-print("Loading base model...")
-base_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, device_map="auto")
 
-print("Loading LoRA...")
-model = PeftModel.from_pretrained(base_model, LORA_PATH)
+def main() -> None:
+    import sys
 
-gpu = get_gpu_info()
+    mode = parse_mode(sys.argv)
+    prefix = "/no_think\n" if mode == "--nothink" else ""
 
-# ============================================================
-# REPORT
-# ============================================================
+    now = datetime.now()
+    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+    date = now.strftime("%Y%m%d")
 
-report = []
-report.append("="*80)
-report.append("BEACON EVALUATION REPORT")
-report.append("="*80)
-report.append(f"Time: {ts}")
-report.append(f"Model: {MODEL_PATH}")
-report.append(f"Mode: {mode}")
-report.append(f"GPU: {gpu['gpu_name']}\n")
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    prompts = load_prompts()
 
-total_t, total_tok = 0, 0
+    if torch.cuda.is_available():
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
 
-# ============================================================
-# LOOP
-# ============================================================
+    print("Loading tokenizer...")
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
 
-print("\n=== EVALUATION START ===\n")
+    print("Loading base model...")
+    base_model = AutoModelForCausalLM.from_pretrained(
+        MODEL_PATH,
+        torch_dtype=get_inference_dtype(),
+        attn_implementation="sdpa",
+        device_map="auto",
+    )
 
-for i, item in enumerate(prompts, 1):
+    print("Loading LoRA...")
+    model = PeftModel.from_pretrained(base_model, LORA_PATH)
+    model.eval()
 
-    prompt = prefix + (item["prompt"] if isinstance(item, dict) else item)
-    category = item.get("category", "uncategorized") if isinstance(item, dict) else "uncategorized"
+    gpu = get_gpu_info()
+    report = [
+        "=" * 80,
+        "BEACON EVALUATION REPORT",
+        "=" * 80,
+        f"Time: {timestamp}",
+        f"Model: {MODEL_PATH}",
+        f"Mode: {mode}",
+        f"GPU: {gpu['gpu_name']}\n",
+    ]
 
-    text = tokenizer.apply_chat_template([{"role":"user","content":prompt}], tokenize=False, add_generation_prompt=True)
+    total_time = 0.0
+    total_tokens = 0
 
-    inputs = tokenizer(text, return_tensors="pt").to(model.device)
-    p_tokens = inputs.input_ids.shape[1]
+    print("\n=== EVALUATION START ===\n")
 
-    start = time.perf_counter()
-    out = model.generate(**inputs, **GENERATION_CONFIG)
-    t = time.perf_counter() - start
+    with torch.inference_mode():
+        for index, item in enumerate(prompts, 1):
+            prompt_text = item["prompt"] if isinstance(item, dict) else item
+            category = item.get("category", "uncategorized") if isinstance(item, dict) else "uncategorized"
+            prompt = prefix + prompt_text
 
-    gen = out[0][p_tokens:]
-    tok = len(gen)
+            chat_text = tokenizer.apply_chat_template(
+                [{"role": "user", "content": prompt}],
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+            inputs = tokenizer(chat_text, return_tensors="pt").to(model.device)
+            prompt_tokens = inputs.input_ids.shape[1]
 
-    resp = tokenizer.decode(gen, skip_special_tokens=True)
+            start = time.perf_counter()
+            output = model.generate(**inputs, **GENERATION_CONFIG)
+            elapsed = time.perf_counter() - start
 
-    total_t += t
-    total_tok += tok
+            generated = output[0][prompt_tokens:]
+            generated_tokens = len(generated)
+            response = tokenizer.decode(generated, skip_special_tokens=True)
 
-    print(f"[{i}/{len(prompts)}] {tok} tok | {t:.2f}s")
+            total_time += elapsed
+            total_tokens += generated_tokens
+            tokens_per_second = generated_tokens / elapsed if elapsed else 0.0
 
-    report.append("="*80)
-    report.append(f"TEST {i} | {category}")
-    report.append(f"Prompt: {prompt}")
-    report.append(f"Response: {resp}")
-    report.append(f"Tokens: {tok} | Time: {t:.2f}s | TPS: {tok/t:.2f}\n")
+            print(f"[{index}/{len(prompts)}] {generated_tokens} tok | {elapsed:.2f}s")
 
-# ============================================================
-# SUMMARY
-# ============================================================
+            report.extend(
+                [
+                    "=" * 80,
+                    f"TEST {index} | {category}",
+                    f"Prompt: {prompt}",
+                    f"Response: {response}",
+                    f"Tokens: {generated_tokens} | Time: {elapsed:.2f}s | TPS: {tokens_per_second:.2f}\n",
+                ]
+            )
 
-report.append("="*80)
-report.append("SUMMARY")
-report.append("="*80)
-report.append(f"Prompts: {len(prompts)}")
-report.append(f"Total Tokens: {total_tok}")
-report.append(f"Total Time: {total_t:.2f}s")
-report.append(f"Avg TPS: {total_tok/total_t:.2f}")
+    report.extend(
+        [
+            "=" * 80,
+            "SUMMARY",
+            "=" * 80,
+            f"Prompts: {len(prompts)}",
+            f"Total Tokens: {total_tokens}",
+            f"Total Time: {total_time:.2f}s",
+            f"Avg TPS: {(total_tokens / total_time) if total_time else 0.0:.2f}",
+        ]
+    )
 
-# ============================================================
-# SAVE
-# ============================================================
+    report_file = RESULTS_DIR / f"e{date}.txt"
+    report_file.write_text("\n".join(report), encoding="utf-8")
 
-Path(f"../outputs/evaluations/results/e{date}.txt").write_text("\n".join(report), encoding="utf-8")
+    print("\n=== DONE ===")
+    print(f"Report saved: {report_file}")
 
-print("\n=== DONE ===")
-print(f"Report saved: e{date}.txt")
+
+if __name__ == "__main__":
+    main()
