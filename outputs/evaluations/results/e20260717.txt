@@ -1,0 +1,134 @@
+================================================================================
+BEACON EVALUATION REPORT
+================================================================================
+Time: 2026-07-17 21:12:27
+Model: C:\Users\Htet Oo Wai Yan\Desktop\4ITProject\Project\models\qwen3-4b
+Mode: --nothink
+GPU: NVIDIA GeForce RTX 5060 Ti
+
+================================================================================
+TEST 1 | uncategorized
+Prompt: /no_think
+NLP ဆိုတာဘာလဲ
+Response: <think>
+
+</think>
+
+Natural Language Processing (NLP) ဟာ computer science, artificial intelligence နဲ့ linguistics ကြီးစပ်ရှင်းလင်းအဖွဲ့တွေမှာ ထူးချွန်တဲ့ လုပ်ငန်းကြေးပါ။ NLP ရည်ရွယ်ချက်က software system တွေကို ဖန်တီးဖို့ပါ - system တွေဟာ human language နဲ့ machine processing ကြား အလွှဳ့ဆက်သွယ်ရေးလုပ်ဆောင်ရေးကို ပံ့ပိုးပါတယ်။ ဒါ့အပြင် data mining နဲ့ information retrieval ကိုလည်း ပိုမိုရှင်းလင်းအားဖြင့် အဓိက အသုံးပြုနိုင်ပါတယ်။
+
+NLP application example တွေမှာ chatbot၊ voice assistant (Siri, Alexa)，text summarization tool，language translation system တို့ ပါဝင်ပါတယ်။ ဒီsystem တွေဟာ user input ကို understand ပြီး output တွေကို generate လုပ်နိုင်ဖို့ အရေ�
+Tokens: 512 | Time: 38.22s | TPS: 13.39
+
+================================================================================
+TEST 2 | uncategorized
+Prompt: /no_think
+Telegram ဆိုတာဘာလဲ
+Response: <think>
+
+</think>
+
+Telegram က Telegram Messenger (မန္တလေး) ဟူသည်အဓိပ္ပါယ်ဖြင့် ဖွဲ့စည်းထားရှိပါတယ်။ "Telegram" ဟု ချဉ်းကပ်ပြီး ပြောင်းလဲထားသည့် အင်္ဂလိပ်စကားကို အသုံးပြုသော messaging app တစ်ခုဖြစ်ပါတယ်။
+
+Telegram ရဲ့ ကွန်ပျူတာပေါ် အသုံးပြုသူ အရေအတွက်က 2018 ခုနှစ်တွင် 457 million+ ကို ရောက်ဝင်ရောက်ခဲ့ပြီး မြန်မာ့ဈေးကွက်မှာလည်း Facebook messenger၊ WeChat ဒါမှမဟုတ် Line တို့နဲ့ တူညီသော နှစ်သပ်ချိန် တောက်ပနေပါတယ်။
+Tokens: 453 | Time: 30.88s | TPS: 14.67
+
+================================================================================
+TEST 3 | uncategorized
+Prompt: /no_think
+မြန်မာနိုင်ငံရဲ့ အမြင့်ဆုံးတောင်က ဘာလဲ
+Response: <think>
+
+</think>
+
+ဒီယာတောင်ဖြစ်ပါတယ်
+Tokens: 32 | Time: 2.22s | TPS: 14.39
+
+================================================================================
+TEST 4 | uncategorized
+Prompt: /no_think
+ရန်ကုန်ကို ဘယ်လိုသွားရလဲ
+Response: <think>
+
+</think>
+
+ရထား၊ မော်တီးစင်တာ (MRT) ဒါမှမဟုတ် အခြားလျှပ်စစ်ညွှန်းယူမှုဖြင့် သွားနိုင်ပါတယ်။
+Tokens: 122 | Time: 8.39s | TPS: 14.55
+
+================================================================================
+TEST 5 | uncategorized
+Prompt: /no_think
+မြန်မာကို အလည်လာရင် ဘယ်ကိုသွားရမလဲ
+Response: <think>
+
+</think>
+
+စတော့ဝပ်ချဉ်း (၁၀) ခံ၊ ဒီဇိုင်းဆူထဲ (၃) ခံ ဖြစ်တဲ့ ဓမဟိကဿန္ဒါကျောင်းကို လှမ်းဝေ့သွားတဲ့ အလှည့်တစ်ခုပါ။
+Tokens: 155 | Time: 10.74s | TPS: 14.44
+
+================================================================================
+TEST 6 | uncategorized
+Prompt: /no_think
+နောက်မှတွေ့မယ်နော်
+Response: <think>
+
+</think>
+
+ဟိုင်းသွားရင် အဆင်ပြီးရင် ဖျားလာမှာပါ။
+Tokens: 64 | Time: 4.21s | TPS: 15.19
+
+================================================================================
+TEST 7 | uncategorized
+Prompt: /no_think
+Welcome to Myanmar ကို မြန်မာလို ဘလိုပြောလဲ
+Response: <think>
+
+</think>
+
+အချစ်ရတယ်၊ ဒါကြောင့် သီးသန့်နှစ်သဘောထားဖွင့်လို့ရပါတယ်။
+Tokens: 88 | Time: 5.85s | TPS: 15.05
+
+================================================================================
+TEST 8 | uncategorized
+Prompt: /no_think
+Router ဆိုတာဘာလဲ
+Response: <think>
+
+</think>
+
+ရှေ့ကန်ချည်းပြီးမသွားနိုင်အဖြစ် အထူးထိန်းချုပ်ထားတဲ့ ဒါဝိုပ္ Fowler (packet) စီးဆောင်ပေးသူပါ။
+
+- Network topology - device connection diagram၊ mesh network မှာ ဟိုကယ်ရော်နယ်ချိတ်ချိတ်မှုအတိုင်း router တွေဟာ switch နဲ့တူ way point ပေါင်း များပြားနေပါတယ်။ Mesh ဆိုတာ dedicated link ပေါင်းပေါင်း ဖြစ်လို့ traffic capacity ပိုများပါတယ်။
+- Switch vs. router - ကျွန်တော်တို့သဘောတူထားတဲ့ packet switching ကနေ ခေါင်းစဉ်ပေါ် ပြောင်းလဲခဲ့ပါတယ်။ Packet header မှာတော့ destination address field နဲ့ next hop decision point တွေ ပါဝင်ပါတယ်။ Switch ကတော့ packet ကို ဒါဝ�
+Tokens: 512 | Time: 33.81s | TPS: 15.14
+
+================================================================================
+TEST 9 | uncategorized
+Prompt: /no_think
+အင်တာနက် ဆိုတာဘာလဲ
+Response: <think>
+
+</think>
+
+ဒစ်ဂျက်ဝေဖန်ခြင်း (networking) ပါ။ ရှေ့ထွက်သည့် အမှတ်တရား (packet) တွေဟာ လမ်းကြောင်းမှီသွားပြီး ရှေ့က အမှတ်တရား (hop) ကို ရောက်တော့ သူပို့ပြီး ပြန်လိုက်တယ်။ ဒါကြောင့် အင်တာနက်အတွင်း စီမံခန့်ခွဲရေးလုပ်ဆောင်မှုတွေ ဖြစ်ပေါ်လာခဲ့ပါတယ် - link layer နဲ့ physical layer တို့ရဲ့ လိုအပ်ချက်တွေကို ပိုမို သဘောပေါက်စွာ သဘောပြောနိုင်ခဲ့ပါတယ်။
+Tokens: 441 | Time: 29.06s | TPS: 15.18
+
+================================================================================
+TEST 10 | uncategorized
+Prompt: /no_think
+ဖုန်းနဲ့ router ဘလိုချိတ်ရလဲ
+Response: <think>
+
+</think>
+
+Router က device (၄) ခုပေါင်းထဲမှာ စီမံခန့်အားပြုပါတယ်၊ network တစ်ခုကို backbone တစ်ခုကို ဆွဲသွားပါတယ်။ ဒီနေ့ခေတ် အဓိက point-to-point link တွေဟာ optical fiber ပဲ ဖြစ်ပါတယ်။ ဝန်ဆောင်မှုအတိုင်း မညီမညာမှာမလို့ - transmission speed, latency, bandwidth အားလုံးကို တည်ဆောက်ထားပါတယ်။
+
+Point-to-point link တွေဟာ internetworking တွေကို အားလုံးကို ချိတ်ဆက်ပေးနိုင်ပါတယ်။ Internetwork တစ်ခုဟာ Internet တစ်ခုကို ချိတ်ဆက်ပေးနိုင်ပါတယ်။ Router တွေဟာ internetwork တွေကို ချိတ်ဆက်နေတဲ့ host တွေကို လူသိရှင်ကူးချိတ်ပေးပါတယ်�
+Tokens: 512 | Time: 33.57s | TPS: 15.25
+
+================================================================================
+SUMMARY
+================================================================================
+Prompts: 10
+Total Tokens: 2891
+Total Time: 196.94s
+Avg TPS: 14.68

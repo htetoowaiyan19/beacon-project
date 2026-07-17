@@ -9,6 +9,7 @@ logging rather than reducing the amount of training.
 from __future__ import annotations
 
 import os
+import inspect
 from pathlib import Path
 
 import torch
@@ -20,7 +21,7 @@ from trl import SFTTrainer
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "models" / "qwen3-4b"
-TRAIN_FILE = PROJECT_ROOT / "datasets" / "clean" / "train" / "data_clean.jsonl"
+TRAIN_FILE = PROJECT_ROOT / "datasets" / "raw" / "train" / "dataJUL1226a497.jsonl"
 OUTPUT_DIR = PROJECT_ROOT / "outputs" / "checkpoints"
 
 EPOCHS = 3
@@ -48,6 +49,23 @@ def format_chat(example: dict, tokenizer: AutoTokenizer) -> dict[str, str]:
             tokenize=False,
         )
     }
+
+
+def build_training_arguments(**kwargs) -> TrainingArguments:
+    """Create TrainingArguments with options supported by the installed version."""
+
+    supported_args = inspect.signature(TrainingArguments.__init__).parameters
+    compatible_kwargs = {
+        key: value
+        for key, value in kwargs.items()
+        if key in supported_args
+    }
+    skipped = sorted(set(kwargs) - set(compatible_kwargs))
+
+    if skipped:
+        print(f"Skipping unsupported TrainingArguments: {', '.join(skipped)}")
+
+    return TrainingArguments(**compatible_kwargs)
 
 
 def main() -> None:
@@ -95,7 +113,7 @@ def main() -> None:
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
 
-    training_args = TrainingArguments(
+    training_args = build_training_arguments(
         output_dir=str(OUTPUT_DIR),
         num_train_epochs=EPOCHS,
         per_device_train_batch_size=PER_DEVICE_BATCH_SIZE,
