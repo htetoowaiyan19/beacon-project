@@ -1,0 +1,96 @@
+
+================================================================================
+Timestamp: 2026-07-17 21:23:41
+Mode: --nothink
+Model: C:\Users\Htet Oo Wai Yan\Desktop\4ITProject\Project\models\qwen3-4b
+Model Type: LoRA
+
+Prompt:
+Hello
+
+Chat Template:
+<|im_start|>user
+/no_think
+Hello<|im_end|>
+<|im_start|>assistant
+
+
+Raw Response:
+<think>
+
+</think>
+
+Hi! How can I assist you today?<|im_end|>
+
+Response:
+<think>
+
+</think>
+
+Hi! How can I assist you today?
+
+METRICS
+
+Tokenizer Load: 0.40s
+Base Model Load: 3.49s
+Adapter Load: 1.18s
+Generation Time: 1.61s
+Total Runtime: 6.70s
+
+Prompt Tokens: 13
+Generated Tokens: 14
+
+Tokens/sec: 8.70
+
+GPU: NVIDIA GeForce RTX 5060 Ti
+VRAM Allocated: 7.54 GB
+VRAM Reserved: 7.60 GB
+
+
+================================================================================
+Timestamp: 2026-07-17 21:24:56
+Mode: --nothink
+Model: C:\Users\Htet Oo Wai Yan\Desktop\4ITProject\Project\models\qwen3-4b
+Model Type: LoRA
+
+Prompt:
+လ
+
+Chat Template:
+<|im_start|>user
+/no_think
+လ<|im_end|>
+<|im_start|>assistant
+
+
+Raw Response:
+<think>
+
+</think>
+
+အိပ်ရန် ခဏကြာမယ်<|im_end|>
+
+Response:
+<think>
+
+</think>
+
+အိပ်ရန် ခဏကြာမယ်
+
+METRICS
+
+Tokenizer Load: 0.41s
+Base Model Load: 3.45s
+Adapter Load: 1.16s
+Generation Time: 2.69s
+Total Runtime: 7.72s
+
+Prompt Tokens: 13
+Generated Tokens: 27
+
+Tokens/sec: 10.05
+
+GPU: NVIDIA GeForce RTX 5060 Ti
+VRAM Allocated: 7.54 GB
+VRAM Reserved: 7.60 GB
+

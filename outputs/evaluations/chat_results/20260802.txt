@@ -1,0 +1,108 @@
+
+================================================================================
+Timestamp: 2026-08-02 22:24:07
+Mode: --think
+Model: C:\Users\Htet Oo Wai Yan\Desktop\4ITProject\Project\models\qwen3-4b
+Model Type: LoRA
+
+Prompt:
+မြန်မာလိုပြောတတ်လား။
+
+Chat Template:
+<|im_start|>user
+မြန်မာလိုပြောတတ်လား။<|im_end|>
+<|im_start|>assistant
+
+
+Raw Response:
+<think>
+
+</think>
+
+ဟုတ်ကဲ့၊ အချင်းအလည်းရှိတယ်။ ဒါပေမဲ့ စာသားဆွဲဖြစ်စေမယ့် ဘာဝန်ထမ်းတွေနဲ့ မတူဘူး။<|im_end|>
+
+Response:
+<think>
+
+</think>
+
+ဟုတ်ကဲ့၊ အချင်းအလည်းရှိတယ်။ ဒါပေမဲ့ စာသားဆွဲဖြစ်စေမယ့် ဘာဝန်ထမ်းတွေနဲ့ မတူဘူး။
+
+METRICS
+
+Tokenizer Load: 0.42s
+Base Model Load: 7.90s
+Adapter Load: 2.42s
+Generation Time: 12.38s
+Total Runtime: 23.19s
+
+Prompt Tokens: 40
+Generated Tokens: 122
+
+Tokens/sec: 9.85
+
+GPU: NVIDIA GeForce RTX 5060 Ti
+VRAM Allocated: 7.75 GB
+VRAM Reserved: 8.01 GB
+
+
+================================================================================
+Timestamp: 2026-08-02 22:25:42
+Mode: --think
+Model: C:\Users\Htet Oo Wai Yan\Desktop\4ITProject\Project\models\qwen3-4b
+Model Type: LoRA
+
+Prompt:
+DDR5 RAM Speed ကဘလောက်လဲ
+
+Chat Template:
+<|im_start|>user
+DDR5 RAM Speed ကဘလောက်လဲ<|im_end|>
+<|im_start|>assistant
+
+
+Raw Response:
+<think>
+
+</think>
+
+Speed ဆိုတာ Clock Rate (MHz) ဖြစ်ပါတယ်။ DDR5 ရဲ့ speed အမျိုးမျိုးကို နှစ်သင်္ချာထွက်ရှိပါတယ် -
+
+- CL30 - 2400 MHz
+- CL36 - 1866 MHz
+
+ဒီ speed တွေဟာ DDR4 နဲ့တူညံ့တံ့ ရှိပြီး အဓိက improvement က latency (CL value) ပေါ့ပေါ့ပါးပါး ဖြစ်လာရေးပါ။
+
+အောက်ဆုံး speed အတွက် အောက်ဆုံး performance အတွက်၊ အပေါ်ဆုံး speed အတွက် အပေါ်ဆုံး performance အတွက် ဝယ်နိုင်ပါတယ်။ ဒီနေ့ခေတ် PC အများစုမှာ အပေါ်ဆုံး speed အတွက် ပေါ့ပါးမှု အသုံးပြုနေတာ ဖြစ်ပြီး အခြေခံ system အလုပ်အတွက် အောက်ဆုံး speed
+
+Response:
+<think>
+
+</think>
+
+Speed ဆိုတာ Clock Rate (MHz) ဖြစ်ပါတယ်။ DDR5 ရဲ့ speed အမျိုးမျိုးကို နှစ်သင်္ချာထွက်ရှိပါတယ် -
+
+- CL30 - 2400 MHz
+- CL36 - 1866 MHz
+
+ဒီ speed တွေဟာ DDR4 နဲ့တူညံ့တံ့ ရှိပြီး အဓိက improvement က latency (CL value) ပေါ့ပေါ့ပါးပါး ဖြစ်လာရေးပါ။
+
+အောက်ဆုံး speed အတွက် အောက်ဆုံး performance အတွက်၊ အပေါ်ဆုံး speed အတွက် အပေါ်ဆုံး performance အတွက် ဝယ်နိုင်ပါတယ်။ ဒီနေ့ခေတ် PC အများစုမှာ အပေါ်ဆုံး speed အတွက် ပေါ့ပါးမှု အသုံးပြုနေတာ ဖြစ်ပြီး အခြေခံ system အလုပ်အတွက် အောက်ဆုံး speed
+
+METRICS
+
+Tokenizer Load: 0.43s
+Base Model Load: 3.92s
+Adapter Load: 1.69s
+Generation Time: 46.40s
+Total Runtime: 52.45s
+
+Prompt Tokens: 26
+Generated Tokens: 512
+
+Tokens/sec: 11.03
+
+GPU: NVIDIA GeForce RTX 5060 Ti
+VRAM Allocated: 7.75 GB
+VRAM Reserved: 8.03 GB
+

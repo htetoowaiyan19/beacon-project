@@ -15,7 +15,6 @@ from utils.generation_utils import GENERATION_CONFIG
 from utils.logging_utils import append_report
 from utils.model_utils import get_gpu_info
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "models" / "qwen3-4b"
 ADAPTER_PATH = PROJECT_ROOT / "outputs" / "checkpoints"
@@ -39,7 +38,6 @@ def parse_args(argv: list[str]) -> tuple[str, str]:
         raise SystemExit("Invalid mode. Use --think or --nothink")
 
     return mode, argv[2]
-
 
 def main() -> None:
     mode, original_prompt = parse_args(sys.argv)
