@@ -33,7 +33,7 @@ except ImportError:
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "models" / "qwen3-4b"
-TRAIN_FILE = PROJECT_ROOT / "datasets" / "raw" / "train" / "data249.jsonl"
+TRAIN_FILE = PROJECT_ROOT / "datasets" / "raw" / "train" / "train7252026812026511.jsonl"
 OUTPUT_DIR = PROJECT_ROOT / "outputs" / "checkpoints"
 
 EPOCHS = 3
