@@ -1,23 +1,23 @@
-"""Train the Qwen model with LoRA adapters.
+"""Train the Qwen model with LoRA adapters on Burmese conversational datasets.
 
-The defaults target a 16 GB GPU with full bf16/fp16 LoRA: bounded sequence
-length, gradient checkpointing, and a small validation split for quality checks.
+The defaults target a 16 GB GPU (e.g. RTX 5060 Ti / 4080 / 4090) with full bf16/fp16 LoRA:
+bounded sequence length, gradient checkpointing, chunked NLL loss, and automatic checkpoint pruning.
 """
 
 from __future__ import annotations
 
+import argparse
+import inspect
 import os
 import platform
+import sys
+from pathlib import Path
 
-# Reduces CUDA allocator fragmentation from variable-length batches.
-# Linux-only: the CUDA allocator on Windows doesn't support this feature
-# and will just print a harmless "not supported on this platform" warning
-# if set there, so skip it entirely on Windows.
+# Ensure UTF-8 output on Windows
+sys.stdout.reconfigure(encoding="utf-8")
+
 if platform.system() == "Linux":
     os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
-
-import inspect
-from pathlib import Path
 
 import torch
 from datasets import load_dataset
@@ -30,72 +30,35 @@ try:
 except ImportError:
     psutil = None
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-MODEL_PATH = PROJECT_ROOT / "models" / "qwen3-4b"
-TRAIN_FILE = PROJECT_ROOT / "datasets" / "raw" / "train" / "train7252026812026511.jsonl"
+DEFAULT_MODEL_PATH = PROJECT_ROOT / "models" / "qwen3-4b"
+DEFAULT_TRAIN_FILE = PROJECT_ROOT / "datasets" / "clean" / "train" / "train_combined.jsonl"
+DEFAULT_VAL_FILE = PROJECT_ROOT / "datasets" / "clean" / "validation" / "validation_combined.jsonl"
 OUTPUT_DIR = PROJECT_ROOT / "outputs" / "checkpoints"
-
-EPOCHS = 3
-PER_DEVICE_BATCH_SIZE = int(os.getenv("TRAIN_BATCH_SIZE", "1"))
-GRADIENT_ACCUMULATION_STEPS = int(os.getenv("GRADIENT_ACCUMULATION_STEPS", "4"))
-MAX_SEQ_LENGTH = int(os.getenv("MAX_SEQ_LENGTH", "2048"))
-EVAL_SPLIT_SIZE = float(os.getenv("EVAL_SPLIT_SIZE", "0.1"))
-DATASET_NUM_PROC = min(2, os.cpu_count() or 1)
-USE_FLASH_ATTENTION = os.getenv("USE_FLASH_ATTENTION", "0") == "1"
-# Packing concatenates multiple examples into one sequence for efficiency,
-# but without a Flash Attention 2/3 implementation the attention mask does
-# not reliably prevent tokens from one packed example attending into its
-# neighbor across the seam (TRL warns about this at runtime). Since the
-# base model here isn't using flash_attention_2/3 by default, packing is
-# OFF by default to avoid silently contaminating training. Only turn this
-# on if USE_FLASH_ATTENTION=1 is also set and flash-attn actually installs
-# and loads successfully for your GPU.
-PACKING = os.getenv("PACKING", "0") == "1"
 
 
 def check_gpu_kernel_support() -> None:
-    """Warn loudly if PyTorch has no compiled kernels for this GPU.
-
-    New GPU generations (e.g. Blackwell / sm_120) are sometimes ahead of
-    the PyTorch wheels available at install time. When that happens CUDA
-    ops can fall back to slow runtime PTX JIT compilation instead of
-    precompiled kernels -- training still runs and loss still goes down,
-    but each step can be 10-50x slower with no obvious error. Catching
-    this early saves hours of confused debugging.
-    """
-
+    """Warn loudly if PyTorch has no compiled kernels for this GPU."""
     if not torch.cuda.is_available():
+        print("INFO: CUDA is not available, running on CPU.")
         return
 
+    gpu_name = torch.cuda.get_device_name(0)
+    vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024 ** 3)
     major, minor = torch.cuda.get_device_capability(0)
     arch = f"sm_{major}{minor}"
     supported = torch.cuda.get_arch_list()
 
+    print(f"INFO: Detected GPU: {gpu_name} ({vram_gb:.1f} GB VRAM, Compute Capability: {arch})")
     if arch not in supported:
         print(
-            f"WARNING: {torch.cuda.get_device_name(0)} reports compute "
-            f"capability {arch}, which is NOT in this PyTorch build's "
-            f"compiled kernel list ({supported}). Training may silently "
-            "fall back to slow PTX JIT compilation. Consider reinstalling "
-            "PyTorch from https://pytorch.org/get-started/locally/ with a "
-            "CUDA version that lists your GPU's architecture."
+            f"WARNING: {gpu_name} reports compute capability {arch}, which is NOT "
+            f"in this PyTorch build's compiled kernel list ({supported})."
         )
 
 
 class MemoryTraceCallback(TrainerCallback):
-    """Logs host RSS + CUDA memory at each logging step and at eval
-    boundaries, so we can see *where* memory grows instead of guessing.
-
-    Prints a line per event; pipe stdout to a file and plot/eyeball it
-    after a short run. Look for:
-      - Steady climb during TRAIN steps only -> leak in the train loop
-        (e.g. something holding refs to logits/activations across steps).
-      - Jumps that line up with "EVAL START"/"EVAL END" -> eval loop is
-        still accumulating something in host memory.
-      - RSS climbs but plateaus/drops after a GC pause -> not a real leak,
-        just delayed garbage collection; harmless.
-    """
+    """Logs host RSS + CUDA memory at each logging step and at eval boundaries."""
 
     def _log(self, tag: str, step: int) -> None:
         if psutil is None:
@@ -119,8 +82,7 @@ class MemoryTraceCallback(TrainerCallback):
 
 
 def get_training_precision() -> tuple[torch.dtype, bool, bool]:
-    """Use BF16 when available, otherwise use FP16 on CUDA."""
-
+    """Use BF16 when available (e.g. Blackwell / Ada Lovelace / Ampere), otherwise FP16."""
     if not torch.cuda.is_available():
         return torch.float32, False, False
 
@@ -141,12 +103,9 @@ def format_chat(example: dict, tokenizer: AutoTokenizer) -> dict[str, str]:
 
 def build_training_arguments(**kwargs) -> SFTConfig:
     """Create SFTConfig with options supported by the installed TRL version."""
-
     supported_args = inspect.signature(SFTConfig.__init__).parameters
     compatible_kwargs = {
-        key: value
-        for key, value in kwargs.items()
-        if key in supported_args
+        key: value for key, value in kwargs.items() if key in supported_args
     }
     skipped = sorted(set(kwargs) - set(compatible_kwargs))
 
@@ -156,21 +115,35 @@ def build_training_arguments(**kwargs) -> SFTConfig:
     return SFTConfig(**compatible_kwargs)
 
 
-def get_attention_implementation() -> str:
-    if USE_FLASH_ATTENTION:
-        return "flash_attention_2"
-
-    return "sdpa"
-
-
 def get_optimizer_name() -> str:
     if torch.cuda.is_available():
         return "adamw_torch_fused"
-
     return "adamw_torch"
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Train Burmese Qwen LoRA Adapter")
+    parser.add_argument("--model_path", type=str, default=str(DEFAULT_MODEL_PATH), help="Path to base model")
+    parser.add_argument("--train_file", type=str, default=str(DEFAULT_TRAIN_FILE), help="Path to training jsonl")
+    parser.add_argument("--val_file", type=str, default=str(DEFAULT_VAL_FILE), help="Path to validation jsonl")
+    parser.add_argument("--output_dir", type=str, default=str(OUTPUT_DIR), help="Output checkpoint directory")
+    parser.add_argument("--epochs", type=int, default=3, help="Number of training epochs")
+    parser.add_argument("--batch_size", type=int, default=1, help="Per device batch size")
+    parser.add_argument("--grad_accum", type=int, default=4, help="Gradient accumulation steps")
+    parser.add_argument("--learning_rate", type=float, default=2e-4, help="Peak learning rate")
+    parser.add_argument("--lora_r", type=int, default=64, help="LoRA rank")
+    parser.add_argument("--lora_alpha", type=int, default=128, help="LoRA alpha")
+    parser.add_argument("--max_seq_length", type=int, default=2048, help="Max sequence length")
+    parser.add_argument("--max_steps", type=int, default=-1, help="Max training steps (-1 for full epochs)")
+    parser.add_argument("--save_total_limit", type=int, default=2, help="Max checkpoints to keep")
+    args = parser.parse_args()
+
+    train_path = Path(args.train_file)
+    if not train_path.exists():
+        print(f"ERROR: Training file not found: {train_path}")
+        print("Please run `python scripts/build_dataset.py` first to generate the combined dataset.")
+        sys.exit(1)
+
     check_gpu_kernel_support()
     torch_dtype, use_bf16, use_fp16 = get_training_precision()
 
@@ -178,27 +151,45 @@ def main() -> None:
         torch.backends.cuda.matmul.allow_tf32 = True
         torch.backends.cudnn.allow_tf32 = True
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, model_max_length=MAX_SEQ_LENGTH)
+    print(f"Loading tokenizer from {args.model_path}...")
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path, model_max_length=args.max_seq_length)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    dataset = load_dataset("json", data_files=str(TRAIN_FILE))
+    print(f"Loading dataset from {train_path}...")
+    dataset = load_dataset("json", data_files=str(train_path))
     dataset = dataset.map(
         format_chat,
         fn_kwargs={"tokenizer": tokenizer},
-        num_proc=DATASET_NUM_PROC,
+        num_proc=min(2, os.cpu_count() or 1),
         remove_columns=dataset["train"].column_names,
         desc="Formatting chat samples",
     )
-    split_dataset = dataset["train"].train_test_split(
-        test_size=EVAL_SPLIT_SIZE,
-        seed=42,
-        shuffle=True,
-    )
+
+    val_path = Path(args.val_file)
+    if val_path.exists():
+        print(f"Loading validation dataset from {val_path}...")
+        val_dataset = load_dataset("json", data_files=str(val_path))
+        val_dataset = val_dataset.map(
+            format_chat,
+            fn_kwargs={"tokenizer": tokenizer},
+            num_proc=min(2, os.cpu_count() or 1),
+            remove_columns=val_dataset["train"].column_names,
+            desc="Formatting validation samples",
+        )
+        train_split = dataset["train"]
+        eval_split = val_dataset["train"]
+    else:
+        print("Validation file not found. Splitting 10% from training data...")
+        split = dataset["train"].train_test_split(test_size=0.1, seed=42, shuffle=True)
+        train_split = split["train"]
+        eval_split = split["test"]
+
+    print(f"Dataset summary: {len(train_split):,} train samples, {len(eval_split):,} eval samples")
 
     lora_config = LoraConfig(
-        r=int(os.getenv("LORA_R", "32")),
-        lora_alpha=int(os.getenv("LORA_ALPHA", "64")),
+        r=args.lora_r,
+        lora_alpha=args.lora_alpha,
         lora_dropout=0.05,
         bias="none",
         task_type="CAUSAL_LM",
@@ -213,39 +204,35 @@ def main() -> None:
         ],
     )
 
+    print(f"Loading base model ({torch_dtype}) from {args.model_path}...")
     model = AutoModelForCausalLM.from_pretrained(
-        MODEL_PATH,
+        args.model_path,
         dtype=torch_dtype,
-        attn_implementation=get_attention_implementation(),
+        attn_implementation="sdpa",
         device_map={"": 0} if torch.cuda.is_available() else None,
     )
     model.config.use_cache = False
 
     model = get_peft_model(model, lora_config)
-    # Required for gradient checkpointing to work correctly with PEFT: since
-    # only the LoRA adapter weights require grad (base model is frozen),
-    # autograd needs this hook to know where to anchor the recompute graph.
-    # Without it, checkpointing silently retains more activations than
-    # expected, contributing to VRAM pressure.
     model.enable_input_require_grads()
     model.print_trainable_parameters()
 
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     training_args = build_training_arguments(
-        output_dir=str(OUTPUT_DIR),
-        num_train_epochs=EPOCHS,
-        per_device_train_batch_size=PER_DEVICE_BATCH_SIZE,
-        gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
-        learning_rate=2e-4,
+        output_dir=str(output_dir),
+        num_train_epochs=args.epochs,
+        max_steps=args.max_steps,
+        per_device_train_batch_size=args.batch_size,
+        gradient_accumulation_steps=args.grad_accum,
+        learning_rate=args.learning_rate,
         bf16=use_bf16,
         fp16=use_fp16,
         tf32=torch.cuda.is_available(),
         optim=get_optimizer_name(),
-        max_length=MAX_SEQ_LENGTH,
-        packing=PACKING,
-        # Avoids materializing the full (batch x seq_len x vocab) logits
-        # tensor every step; skips ignored/padding positions before the
-        # lm_head matmul instead. Falls back silently on older TRL
-        # versions via build_training_arguments' kwarg filtering.
+        max_length=args.max_seq_length,
+        packing=False,
         loss_type="chunked_nll",
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
@@ -256,14 +243,12 @@ def main() -> None:
         dataloader_num_workers=0,
         dataloader_pin_memory=True,
         logging_steps=10,
-        eval_strategy="epoch",
-        # Flush eval logits to CPU after every eval batch instead of
-        # accumulating the full (batch x seq_len x vocab) tensor on GPU
-        # across the whole eval set. With a ~152k vocab this was almost
-        # certainly the main driver of VRAM -> shared RAM spillover during
-        # evaluation.
+        eval_strategy="steps" if args.max_steps > 0 else "epoch",
+        eval_steps=10 if args.max_steps > 0 else None,
         eval_accumulation_steps=1,
-        save_strategy="epoch",
+        save_strategy="steps" if args.max_steps > 0 else "epoch",
+        save_steps=10 if args.max_steps > 0 else None,
+        save_total_limit=args.save_total_limit,  # Automatically limits saved checkpoints!
         save_safetensors=True,
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
@@ -273,16 +258,28 @@ def main() -> None:
 
     trainer = SFTTrainer(
         model=model,
-        train_dataset=split_dataset["train"],
-        eval_dataset=split_dataset["test"],
+        train_dataset=train_split,
+        eval_dataset=eval_split,
         args=training_args,
         processing_class=tokenizer,
         callbacks=[MemoryTraceCallback()],
     )
 
+    print("\n" + "=" * 70)
+    print("STARTING BURMESE LORA TRAINING")
+    print(f"  Total Epochs:          {args.epochs}")
+    print(f"  Batch Size (Effective):{args.batch_size * args.grad_accum}")
+    print(f"  Learning Rate:         {args.learning_rate}")
+    print(f"  LoRA Rank (r):         {args.lora_r} (alpha={args.lora_alpha})")
+    print(f"  Checkpoint Limit:      {args.save_total_limit} (auto-pruned)")
+    print("=" * 70 + "\n")
+
     trainer.train()
-    trainer.save_model(str(OUTPUT_DIR))
-    tokenizer.save_pretrained(OUTPUT_DIR)
+
+    print(f"\nSaving final model & tokenizer to {output_dir}...")
+    trainer.save_model(str(output_dir))
+    tokenizer.save_pretrained(output_dir)
+    print("Training successfully completed!")
 
 
 if __name__ == "__main__":

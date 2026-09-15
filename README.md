@@ -1,82 +1,89 @@
-# BEACON PROJECT
-As artificial intelligence continues to evolve year after year, we, as Myanmar, an underdeveloped country, aim to assist our citizens in effectively utilizing AI in our native language.
+# BEACON PROJECT - Burmese AI Assistant
 
-## Data Collection Team
-မိမိ Collect လုပ်ထားသော data များကို [raw](https://github.com/htetoowaiyan19/beacon-project/tree/main/datasets/raw) ထဲမှ သက်ဆိုင်သော directory ထဲတွင် file တစ်ခုတည်းအဖြစ် စုပြီးထည့်ပေးပါ။ **မိမိ PC ထဲတွင် မဖျက်ပဲ Backup ထားပေးပါရန်။**
+An open initiative to build a fluent, culturally-aware Burmese (Myanmar Language) Large Language Model Assistant using Qwen3 and Parameter-Efficient Fine-Tuning (LoRA).
 
-## Data Cleaning Team
-[raw](https://github.com/htetoowaiyan19/beacon-project/tree/main/datasets/raw) ထဲမှ data များကို စစ်ပြီး [clean](https://github.com/htetoowaiyan19/beacon-project/tree/main/datasets/clean) ထဲသို့ပြောင်းထည့်ပေးပါ။ Clean ပြီးသော raw datasets များကို တစ်ခါတည်းဖျက်ပေးပါ။ သေချာပြီဆိုမှ repo ကဖျက်ပါ။ **မိမိ PC ထဲတွင် မဖျက်ပဲ Backup ထားပေးပါရန်။**
+---
 
-### Project Structure
+## Project Structure
+
 ```
 beacon-project/
 │
-├── datasets/                   - Dataset နှင့်ဆိုင်သော file များ
-│   ├── clean/                  - Clean ပြီးသား dataset များကိုသိမ်းရန်
-│   │   ├── test/
-│   │   ├── train/
-│   │   └── validation/
-│   ├── raw/                    - Collect ပြီးသာ dataset အသစ်များကိုသိမ်းရန်
-│   │   ├── test/
-│   │   ├── train/
-│   │   └── validation/
-│   └── trained/                - Train ပြီးသော dataset များ
-│       ├── test/
-│       ├── train/
-│       └── validation/
+├── datasets/                   - Datasets repository
+│   ├── clean/                  - Cleaned & validated datasets
+│   │   ├── train/              - train_combined.jsonl (Ready for training)
+│   │   └── validation/         - validation_combined.jsonl (Evaluation split)
+│   ├── raw/                    - Raw collected JSONL files
+│   └── trained/                - Archived training sets
 │
-├── models/                     - AI Model များထားသည့်နေရာ
-│
-├── notebooks/                  - Code စမ်းရန် Jupyter Notebooks များ
-│   ├── test.ipynb
-│   ├── tokenizer_test.ipynb
-│   └── training_test.ipynb
+├── models/                     - Base AI Models (e.g., Qwen3-4B)
 │
 ├── outputs/
-│   ├── checkpoints/            - LoRA train ထားသော checkpoints များ (gitignore)        
-│   ├── evaluations/            - Evaluation record များ
-│   │   ├── chat_results/       - chat_base နှင့် chat_lora မှရသော results များ
-│   │   └── results/            - evaluation မှရသော results များ
-│   └── logs/                   - Program log များ
+│   ├── checkpoints/            - LoRA weights & adapter configs
+│   ├── evaluations/            - Automated benchmark reports
+│   └── logs/                   - Runtime logs
 │
-├── prompts/                    - Evaluation အတွက် prompts များ
+├── prompts/
+│   └── evaluation_prompts.json - Multi-domain Burmese benchmark prompts
 │
 ├── scripts/
-│   ├── chat_base.py            - Train မလုပ်ထားသော model ကိုစမ်းရန်
-│   ├── chat_lora.py            - Train ထားသော model ကိုစမ်းရန်
-│   ├── download_model.py       - Model တစ်ခု download လုပ်ရန်
-│   ├── evaluate_model.py       - Evaluation လုပ်ရန်
-│   └── train_lora.py           - Model train ရန်
+│   ├── build_dataset.py        - Clean, deduplicate & compile training splits
+│   ├── train_lora.py           - Train LoRA adapter on RTX 5060Ti (16GB)
+│   ├── chat_interactive.py     - Real-time interactive terminal chat
+│   ├── chat_lora.py            - Test single prompt on LoRA model
+│   ├── chat_base.py            - Test single prompt on Base model
+│   ├── evaluate_model.py       - Run automated multi-domain evaluation benchmark
+│   └── utils/                  - Text normalizer, generation & model utilities
 │
 ├── requirements.txt
-│
 └── README.md
 ```
 
-### မိမိ PC သို့ Repo အား Clone ရန်
+---
 
-- မိမိ clone လုပ်မည့် directory တွင် CLI အားဖွင့်ပါ။
-- CLI ဖွင့်ပြီး အောက်ပါအတိုင်း ရိုက်ထည့်ပါ။
+## Quickstart Guide
 
+### 1. Build / Recompile the Combined Dataset
+Merges all clean/raw datasets, normalizes Myanmar Unicode, strips synthetic noise, removes duplicates, and creates `train_combined.jsonl`:
 ```bash
-git clone https://github.com/htetoowaiyan19/beacon-project
-cd beacon-project
+python scripts/build_dataset.py
 ```
 
-- ထို့နောက် Python Scripts များစမ်းလိုပါက requirements များ install ပါ
-
+### 2. Train the LoRA Model (Ready in 1 Go)
+Trains on the combined Burmese dataset with automatic VRAM optimization and checkpoint pruning (keeping only the best 2 checkpoints):
 ```bash
-pip install -r requirements.txt
+python scripts/train_lora.py
+```
+*Optional parameters:*
+```bash
+python scripts/train_lora.py --epochs 3 --batch_size 1 --grad_accum 4 --learning_rate 2e-4 --lora_r 64
 ```
 
-### ကိုယ်ပိုင် Model တစ်ခု train လိုပါက မိမိ PC နှင့်ကိုက်ညီသော Model ကိုရွေး train ပေးဖို့လိုပါတယ်။
+### 3. Interactive Chat with the Model
+Chat with your trained Burmese model in real-time:
+```bash
+# Chat with LoRA model
+python scripts/chat_interactive.py
 
-| Model      | Parameters | Recommended GPU        | Notes                      |
-| ---------- | ---------- | ---------------------- | -------------------------- |
-| Qwen3-0.6B | 0.6B       | 6–8 GB VRAM            | Very fast, limited quality |
-| Qwen3-1.7B | 1.7B       | 8–10 GB VRAM           | Good for experimentation   |
-| Qwen3-4B   | 4B         | 12–16 GB VRAM          | Excellent balance          |
-| Qwen3-8B   | 8B         | 16–24 GB VRAM          | Strong chatbot quality     |
-| Qwen3-14B  | 14B        | 24–48 GB VRAM          | High-quality assistant     |
-| Qwen3-32B  | 32B        | 48–80 GB VRAM          | Enterprise/research        |
-| Qwen3-72B  | 72B        | Multi-GPU 160+ GB VRAM | Large-scale training       |
+# Chat with Base model for comparison
+python scripts/chat_interactive.py --base
+```
+
+### 4. Run Benchmark Evaluation
+Evaluate model fluency across 15+ benchmark questions:
+```bash
+python scripts/evaluate_model.py --nothink
+```
+
+---
+
+## Hardware Configuration (RTX 5060 Ti 16GB)
+
+| Parameter | Setting | Reason |
+| :--- | :--- | :--- |
+| **Precision** | `bfloat16` (BF16) | Native acceleration on RTX 50-series |
+| **Batch Size** | 1 (per device) | Conserves VRAM during peak attention |
+| **Gradient Accumulation** | 4 steps | Effective batch size of 4 |
+| **Max Sequence Length** | 2048 tokens | Fits complex multi-turn Burmese conversations |
+| **LoRA Rank ($r$)** | 64 ($alpha = 128$) | High expressive capacity for Burmese language |
+| **Loss Function** | `chunked_nll` | Prevents vocab matrix VRAM explosion |

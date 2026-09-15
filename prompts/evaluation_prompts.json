@@ -1,12 +1,102 @@
 [
-  "NLP ဆိုတာဘာလဲ",
-  "Telegram ဆိုတာဘာလဲ",
-  "မြန်မာနိုင်ငံရဲ့ အမြင့်ဆုံးတောင်က ဘာလဲ",
-  "ရန်ကုန်ကို ဘယ်လိုသွားရလဲ",
-  "မြန်မာကို အလည်လာရင် ဘယ်ကိုသွားရမလဲ",
-  "နောက်မှတွေ့မယ်နော်",
-  "Welcome to Myanmar ကို မြန်မာလို ဘလိုပြောလဲ",
-  "Router ဆိုတာဘာလဲ",
-  "အင်တာနက် ဆိုတာဘာလဲ",
-  "ဖုန်းနဲ့ router ဘလိုချိတ်ရလဲ"
+  {
+    "category": "University & TU Hmawbi CEIT",
+    "prompt": "Technological University (Hmawbi) ရဲ့ Vision နဲ့ Mission က ဘာလဲ။"
+  },
+  {
+    "category": "University & TU Hmawbi CEIT",
+    "prompt": "TU Hmawbi ရဲ့ ကွန်ပျူတာ အင်ဂျင်နီယာနှင့် သုတနည်းပညာဌာန (CEIT) အကြောင်း မိတ်ဆက်ပေးပါ။"
+  },
+  {
+    "category": "University & TU Hmawbi CEIT",
+    "prompt": "TU (Hmawbi) က မွေးထုတ်လိုက်တဲ့ အင်ဂျင်နီယာတွေမှာ ဘယ်လို အရည်အချင်းမျိုးတွေ ရှိရမလဲ။"
+  },
+  {
+    "category": "University & TU Hmawbi CEIT",
+    "prompt": "မှော်ဘီနည်းပညာတက္ကသိုလ်ရဲ့ တည်နေရာနဲ့ လိပ်စာကို ပြောပြပေးပါ။"
+  },
+  {
+    "category": "Computer Hardware & Architecture",
+    "prompt": "RAM (Random-Access Memory) ဆိုတာ ဘာလဲ။ DRAM နဲ့ SRAM ဘာကွာလဲ။"
+  },
+  {
+    "category": "Computer Hardware & Architecture",
+    "prompt": "SSD နဲ့ HDD ရဲ့ အဓိက ကွာခြားချက်တွေကို ရှင်းပြပေးပါ။"
+  },
+  {
+    "category": "Computer Hardware & Architecture",
+    "prompt": "CPU တစ်လုံးမှာ Cache Memory က ဘာကြောင့် အရေးကြီးတာလဲ။"
+  },
+  {
+    "category": "Computer Hardware & Architecture",
+    "prompt": "GPU နဲ့ CPU ဘာကွာလဲ။ AI model တွေ train ရာမှာ ဘာကြောင့် GPU ကို သုံးရတာလဲ။"
+  },
+  {
+    "category": "Operating Systems & Databases",
+    "prompt": "Operating System မှာ Deadlock ဆိုတာ ဘာလဲ။ Deadlock မဖြစ်အောင် ဘယ်လို ကာကွယ်နိုင်မလဲ။"
+  },
+  {
+    "category": "Operating Systems & Databases",
+    "prompt": "Database မှာ ACID guarantees ဆိုတာ ဘာကို ဆိုလိုတာလဲ။"
+  },
+  {
+    "category": "Operating Systems & Databases",
+    "prompt": "Process နဲ့ Thread ဘာကွာခြားလဲ။"
+  },
+  {
+    "category": "Operating Systems & Databases",
+    "prompt": "Virtual Memory ဆိုတာ ဘာလဲ။ Operating System က ဘယ်လို စီမံခန့်ခွဲလဲ။"
+  },
+  {
+    "category": "Networking & Security",
+    "prompt": "OSI Layer (၇) ခုရဲ့ အမည်နဲ့ အဓိက လုပ်ဆောင်ချက်တွေကို အောက်ကနေ အထက် စဉ်ပြပေးပါ။"
+  },
+  {
+    "category": "Networking & Security",
+    "prompt": "Switch နဲ့ Router ဘာကွာခြားလဲ။ ဘယ်နေရာတွေမှာ အသုံးပြုလဲ။"
+  },
+  {
+    "category": "Networking & Security",
+    "prompt": "TCP နဲ့ UDP protocol နှစ်ခုရဲ့ အဓိက ကွာခြားချက်က ဘာလဲ။"
+  },
+  {
+    "category": "Networking & Security",
+    "prompt": "Password Hashing မှာ SHA-256 ထက် bcrypt ဒါမှမဟုတ် Argon2 ကို ဘာကြောင့် ပိုသုံးသင့်တာလဲ။"
+  },
+  {
+    "category": "Natural Burmese Conversation",
+    "prompt": "မင်္ဂလာပါခင်ဗျာ၊ နေကောင်းလား။ ဒီနေ့ ဘာတွေ ကူညီပေးနိုင်မလဲ။"
+  },
+  {
+    "category": "Natural Burmese Conversation",
+    "prompt": "ကျေးဇူးတင်ပါတယ်လို့ ပြောလာရင် ပြန်လည် ယဉ်ကျေးစွာ ဘယ်လို နှုတ်ဆက်သင့်လဲ။"
+  },
+  {
+    "category": "Natural Burmese Conversation",
+    "prompt": "ကျွန်တော် ညောင်းညာပြီး အလုပ်လုပ်ရတာ စိတ်မပါဘူးဖြစ်နေတယ်၊ ဘာလုပ်သင့်လဲ အကြံပေးပါဦး။"
+  },
+  {
+    "category": "Myanmar Culture & Travel",
+    "prompt": "ရန်ကုန်ကနေ ပုဂံကို ခရီးသွားမယ်ဆိုရင် ဘယ်လို သွားလို့ရမလဲ၊ ဘာတွေ သတိထားသင့်လဲ။"
+  },
+  {
+    "category": "Myanmar Culture & Travel",
+    "prompt": "မြန်မာနိုင်ငံမှာ သင်္ကြန်ပွဲတော်ကို ဘယ်လိုဆင်နွှဲကြလဲ။"
+  },
+  {
+    "category": "Language & Translation",
+    "prompt": "'Never mind, everything will be fine.' ကို သဘာဝကျကျ မြန်မာလို ဘာသာပြန်ပေးပါ။"
+  },
+  {
+    "category": "Language & Translation",
+    "prompt": "'Welcome to our Department of Computer Engineering and Information Technology.' ကို မြန်မာလို ဘာသာပြန်ပေးပါ။"
+  },
+  {
+    "category": "Language & Translation",
+    "prompt": "'Artificial Intelligence is transforming modern engineering and education.' ကို မြန်မာလို ဘာသာပြန်ပေးပါ။"
+  },
+  {
+    "category": "Education & Career Guidance",
+    "prompt": "ကျောင်းပြီးသွားတဲ့ IT ကျောင်းသားတစ်ယောက်အတွက် အလုပ်အကိုင် အခွင့်အလမ်း ဘယ်လိုလမ်းကြောင်းတွေ ရှိလဲ။"
+  }
 ]
