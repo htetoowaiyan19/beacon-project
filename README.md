@@ -36,8 +36,16 @@ beacon-project/
 │   └── utils/                  - Text normalizer, generation & model utilities
 │
 ├── requirements.txt
+├── TRAINING_GUIDE.md           - Step-by-step end-to-end training guide
+├── TRAINING_REPORT.md          - Final checkpoint training & evaluation report
 └── README.md
 ```
+
+---
+
+## 📊 Final Training Report
+Detailed training dynamics, loss graphs, hyperparameter specs, and benchmark outputs for the final checkpoint are documented in **[TRAINING_REPORT.md](TRAINING_REPORT.md)**.
+
 
 ---
 
