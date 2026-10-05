@@ -15,6 +15,7 @@ dist/
 # Virtual Environments
 # ==========================================
 .venv/
+.venv-*/
 venv/
 env/
 ENV/
@@ -41,6 +42,8 @@ Thumbs.db
 # ==========================================
 .env
 .env.*
+!.env.example
+!.env.*.example
 
 # ==========================================
 # Logs
@@ -64,6 +67,9 @@ outputs/checkpoints/**
 outputs/logs/**
 !outputs/logs/.gitkeep
 
+# UI runs contain local configuration, telemetry and model artifacts.
+outputs/training_runs/
+
 # ==========================================
 # Hugging Face Cache (optional)
 # ==========================================
@@ -85,3 +91,36 @@ hf_cache/
 *.tmp
 *.temp
 *.bak
+
+# Local datasets and generated reviews; share separately from source.
+/datasets/*
+!/datasets/README.md
+!/datasets/active.json
+/outputs/
+/archives/
+*.zip
+*.parquet
+*.arrow
+
+# Tool caches, local configuration and credentials
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.agents/
+.codex/
+.aws/
+*.pem
+*.key
+
+# Frontend dependencies and generated files
+node_modules/
+.next/
+.nuxt/
+.vercel/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+/.handoff-audit.json

@@ -1,0 +1,2 @@
+-r requirements-inference.txt
+sacrebleu>=2.5,<3

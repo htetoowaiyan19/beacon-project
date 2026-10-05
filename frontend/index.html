@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>BEACON · Burmese companion</title><link rel="stylesheet" href="style.css"></head>
+<body><main><header><div><span class="eyebrow">BEACON</span><h1>Your Burmese companion</h1><p>Chat, learn, and explore IT together.</p></div><button id="clear">New chat</button></header>
+<div class="layout"><aside><h2>Model settings</h2><label><input id="base" type="checkbox"> Use base model</label><label><input id="think" type="checkbox"> Thinking mode</label>
+<label>Temperature <input id="temperature" type="number" min="0" max="2" step="0.1" value="0.7"></label><label>Response tokens <input id="tokens" type="number" min="16" max="2048" value="512"></label>
+<label>System prompt override <textarea id="system" rows="4" placeholder="Leave blank for the shared companion persona"></textarea></label><h2>Status</h2><p id="health">Checking model…</p><p id="metrics"></p></aside>
+<section class="chat"><div id="messages" aria-live="polite"><p class="welcome">မင်္ဂလာပါ။ ဘာကူညီပေးရမလဲ။<br><small>Write in Burmese or English. I'll follow your language and tone.</small></p></div>
+<form id="form"><textarea id="prompt" rows="3" placeholder="Send a message…" required maxlength="32000" aria-label="Message"></textarea><button id="send" type="submit">Send</button><button id="stop" type="button" hidden>Stop</button></form><p id="error" role="alert"></p></section></div></main><script src="stream.js"></script><script src="app.js"></script></body></html>

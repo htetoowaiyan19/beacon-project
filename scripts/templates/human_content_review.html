@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Final dataset · Human content review</title>
+<style>
+body{font:16px/1.8 "Myanmar Text","Noto Sans Myanmar",sans-serif;background:#f4f6f8;color:#172b3a;margin:0}header,main{max-width:1100px;margin:auto;padding:22px}header{background:#f4f6f8}h1{font-size:26px}input,select,button{font:inherit;padding:8px;margin:4px}input{width:360px;max-width:85%}article{background:white;border:1px solid #ccd5dc;border-radius:10px;padding:20px;margin-bottom:20px}h2{font-size:18px;overflow-wrap:anywhere}.turn{white-space:pre-wrap;background:#f0f4f8;padding:14px;margin:8px 0}.assistant{background:#edf7f3}.meta{font-size:14px;overflow-wrap:anywhere}strong{color:#763118}label{display:inline-block}
+</style>
+<header><h1>Human content review · it_seminar_v3</h1>
+<p>Read-only review packet. P1 = specific content issue; P2 = review candidate, not necessarily an error. No human approvals are recorded here. All messages are displayed verbatim.</p>
+<p>Search an ID, Burmese phrase, topic, reason code, or <code>group:12</code> to compare an answer group. Record corrections separately with the ID and content hash. Nothing here changes the training data.</p>
+<label>Priority <select id="priority"><option>P1</option><option>P2</option><option value="">All</option></select></label>
+<label>Split <select id="split"><option value="">All</option><option>train</option><option>validation</option><option>test</option></select></label>
+<label>Search <input id="search" placeholder="ID, text, topic, reason, group:12"></label>
+<p id="status" role="status"></p><button id="previous">Previous 30</button><button id="next">Next 30</button>
+</header><main id="list"></main>
+<script id="records" type="application/json">__RECORDS_JSON__</script>
+<script>
+'use strict';
+const rows=JSON.parse(document.getElementById('records').textContent);
+const priority=document.getElementById('priority'),split=document.getElementById('split'),search=document.getElementById('search');
+let page=0;
+if(!rows.some(r=>r.priority==='P1'))priority.value='';
+function el(tag,text){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;}
+function render(){
+ const query=search.value.trim().toLowerCase(), group=/^group:(\d+)$/.exec(query);
+ const selected=rows.filter(r=>(!priority.value||r.priority===priority.value)&&(!split.value||r.split===split.value)&&(group?r.review_reasons.some(f=>f.group===Number(group[1])):JSON.stringify(r).toLowerCase().includes(query)));
+ page=Math.max(0,Math.min(page,Math.max(0,Math.ceil(selected.length/30)-1)));
+ document.getElementById('status').textContent=`${selected.length} matching records; ${rows.length} total queued. Page ${page+1} of ${Math.max(1,Math.ceil(selected.length/30))}.`;
+ document.getElementById('previous').disabled=page===0;document.getElementById('next').disabled=(page+1)*30>=selected.length;
+ const list=document.getElementById('list');list.replaceChildren();
+ for(const r of selected.slice(page*30,(page+1)*30)){
+  const card=el('article');card.append(el('h2',`${r.priority} · ${r.id}`));
+  const meta=el('p',`${r.split} · ${r.tags} · ${r.release_file}:${r.release_line}`);meta.className='meta';card.append(meta);
+  for(const f of r.review_reasons){const p=el('p',`${f.priority} ${f.code}${f.group?' · group:'+f.group:''}: ${f.reason}`);card.append(p);}
+  const system=el('details');system.append(el('summary','System prompt'),el('p',r.messages[0].content));card.append(system);
+  for(const m of r.messages.slice(1)){const turn=el('div');turn.className='turn '+m.role;turn.append(el('strong',m.role),el('div',m.content));card.append(turn);}
+  const hash=el('p','Current content SHA-256: '+r.current_content_sha256);hash.className='meta';card.append(hash);list.append(card);
+ }
+}
+for(const input of [priority,split,search])input.addEventListener('input',()=>{page=0;render();});
+document.getElementById('previous').onclick=()=>{page--;render();window.scrollTo(0,0);};
+document.getElementById('next').onclick=()=>{page++;render();window.scrollTo(0,0);};
+render();
+</script></html>

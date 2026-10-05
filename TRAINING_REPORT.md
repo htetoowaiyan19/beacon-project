@@ -1,4 +1,10 @@
+> Current dataset: [burmese_fluency_v2](datasets/README.md), a 150-conversation review candidate, supersedes the v1 paths and counts below. Source text, versioned releases, user reviews, and archived data now have separate directories.
+
+> Dataset update (2026-10-03): The legacy corpus and generator are archived. Current training/evaluation defaults use `datasets/burmese_fluency_v1/`, a 50-conversation synthetic style seed awaiting native-speaker review and expansion. Run `python scripts/build_fluency_dataset.py` to rebuild it. New checkpoints default to `outputs/checkpoints-fluency-v1`. Dataset counts, paths, ingestion instructions, and training commands below describe the previous corpus and are historical. See [DATASET_QUALITY_REPORT.md](DATASET_QUALITY_REPORT.md) for current findings and limitations.
+
 # BEACON MYANMAR AI - FINAL CHECKPOINT TRAINING REPORT
+
+> Review update (2026-10-03): this is a historical report. The audit found repeated opening questions across train/validation/test, and the latest generation benchmark covered only 10 questions. Token accuracy does not establish factual accuracy or production readiness. The exported root adapter matches the best epoch-2 checkpoint. See [PROJECT_REVIEW.md](PROJECT_REVIEW.md) for verified findings, prepared grouped data, and the corrected training workflow.
 
 **Report Date:** 2026-09-16  
 **Project:** BEACON Burmese Large Language Model  
@@ -166,4 +172,4 @@ The final checkpoint was benchmarked against unseen prompts from `datasets/clean
 2. **Interactive Usage:** Ready for live interaction via `python scripts/chat_interactive.py`.
 3. **Future Continuous Training:** When adding new domain data in the future:
    - Run `python scripts/build_dataset.py` to regenerate the 3-way split.
-   - Fine-tune from this checkpoint using `--lora_path outputs/checkpoints` or continue LoRA adaptation.
+   - Follow the grouped-split training workflow in [PROJECT_REVIEW.md](PROJECT_REVIEW.md). The training script currently starts a new adapter from the base model; it does not accept a `--lora_path` argument for continued adaptation.

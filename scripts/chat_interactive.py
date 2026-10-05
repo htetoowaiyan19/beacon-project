@@ -22,7 +22,10 @@ from utils.model_utils import get_gpu_info
 
 DEFAULT_MODEL_PATH = PROJECT_ROOT / "models" / "qwen3-4b"
 DEFAULT_LORA_PATH = PROJECT_ROOT / "outputs" / "checkpoints"
-DEFAULT_SYSTEM_PROMPT = "သင်သည် အကူအညီပေးသော မြန်မာ AI လက်ထောက်တစ်ဦး ဖြစ်ပါသည်။"
+if __package__:
+    from .utils.persona import DEFAULT_SYSTEM_PROMPT
+else:
+    from utils.persona import DEFAULT_SYSTEM_PROMPT
 
 
 def get_inference_dtype() -> torch.dtype | str:

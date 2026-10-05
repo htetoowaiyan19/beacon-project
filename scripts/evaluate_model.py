@@ -13,11 +13,14 @@ import argparse
 import json
 import sys
 import time
+from contextlib import nullcontext
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 
 # Ensure UTF-8 output on Windows
-sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 import torch
 from peft import PeftModel
@@ -28,12 +31,16 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
 from utils.generation_utils import GENERATION_CONFIG
 from utils.model_utils import get_gpu_info
+from utils.active_dataset import active_release
 
 DEFAULT_MODEL_PATH = PROJECT_ROOT / "models" / "qwen3-4b"
 DEFAULT_LORA_PATH = PROJECT_ROOT / "outputs" / "checkpoints"
 DEFAULT_PROMPTS_FILE = PROJECT_ROOT / "prompts" / "evaluation_prompts.json"
 RESULTS_DIR = PROJECT_ROOT / "outputs" / "evaluations" / "results"
-DEFAULT_SYSTEM_PROMPT = "သင်သည် အကူအညီပေးသော မြန်မာ AI လက်ထောက်တစ်ဦး ဖြစ်ပါသည်။"
+if __package__:
+    from .utils.persona import DEFAULT_SYSTEM_PROMPT
+else:
+    from utils.persona import DEFAULT_SYSTEM_PROMPT
 
 
 def get_inference_dtype() -> torch.dtype | str:
@@ -58,13 +65,17 @@ def load_prompts(prompts_path: Path, max_samples: int | None = None) -> list[dic
                     continue
 
                 if "messages" in data and isinstance(data["messages"], list):
-                    user_msg = next((m.get("content", "") for m in data["messages"] if m.get("role") == "user"), "")
-                    ref_msg = next((m.get("content", "") for m in data["messages"] if m.get("role") == "assistant"), "")
+                    conversation = data["messages"]
+                    if not conversation or conversation[-1].get("role") != "assistant":
+                        continue
+                    user_msg = next((m.get("content", "") for m in reversed(conversation[:-1]) if m.get("role") == "user"), "")
+                    ref_msg = conversation[-1].get("content", "")
                     if user_msg:
                         prompts.append({
                             "category": "Test Set",
                             "prompt": user_msg,
                             "reference": ref_msg,
+                            "messages": conversation[:-1],
                         })
                 else:
                     u = data.get("prompt") or data.get("instruction") or data.get("question") or ""
@@ -88,6 +99,7 @@ def load_prompts(prompts_path: Path, max_samples: int | None = None) -> list[dic
             prompts.append({
                 "category": item.get("category", "General"),
                 "prompt": item.get("prompt", ""),
+                "reference": item.get("reference", item.get("answer", "")),
             })
         elif isinstance(item, str):
             prompts.append({
@@ -104,18 +116,19 @@ def generate_response(
     tokenizer: AutoTokenizer,
     prompt: str,
     think_mode: bool = False,
+    messages: list[dict] | None = None,
 ) -> tuple[str, int, float, float]:
     """Generate response and return (text, token_count, elapsed_sec, tok_per_sec)."""
-    full_prompt = prompt if think_mode else f"/no_think\n{prompt}"
-    messages = [
+    messages = messages or [
         {"role": "system", "content": DEFAULT_SYSTEM_PROMPT},
-        {"role": "user", "content": full_prompt},
+        {"role": "user", "content": prompt},
     ]
 
     chat_text = tokenizer.apply_chat_template(
         messages,
         tokenize=False,
         add_generation_prompt=True,
+        enable_thinking=think_mode,
     )
     inputs = tokenizer(chat_text, return_tensors="pt").to(model.device)
     prompt_tokens = inputs.input_ids.shape[1]
@@ -128,10 +141,30 @@ def generate_response(
 
     generated_ids = outputs[0][prompt_tokens:]
     response = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+    # Score/display the final answer, not the thinking trace.
+    if "</think>" in response:
+        response = response.split("</think>", 1)[1].strip()
+    elif response.startswith("<think>"):
+        response = ""  # Token budget ended before an answer was produced.
     tok_count = len(generated_ids)
     tps = tok_count / elapsed if elapsed > 0 else 0.0
 
     return response, tok_count, elapsed, tps
+
+
+def score_reference(response: str, reference: str) -> dict:
+    """Surface agreement with a gold answer; does not measure factual correctness."""
+    if not reference:
+        return {}
+    normalize = lambda text: " ".join(unicodedata.normalize("NFC", text).split())
+    scores = {"normalized_exact_match": float(normalize(response) == normalize(reference))}
+    try:
+        from sacrebleu.metrics import CHRF
+    except ImportError:
+        pass
+    else:
+        scores["chrf"] = CHRF().sentence_score(response, [reference]).score
+    return scores
 
 
 def main() -> None:
@@ -139,16 +172,18 @@ def main() -> None:
     parser.add_argument("--base", action="store_true", help="Evaluate Base model only")
     parser.add_argument("--compare", action="store_true", help="Run side-by-side comparison of Base vs LoRA")
     parser.add_argument("--think", action="store_true", help="Enable thinking mode (omit /no_think)")
+    parser.add_argument("--nothink", action="store_false", dest="think", help="Disable thinking (default)")
+    parser.set_defaults(think=False)
     parser.add_argument("--model_path", type=str, default=str(DEFAULT_MODEL_PATH), help="Base model directory")
     parser.add_argument("--lora_path", type=str, default=str(DEFAULT_LORA_PATH), help="LoRA checkpoint directory")
     parser.add_argument("--prompts_file", type=str, default=str(DEFAULT_PROMPTS_FILE), help="Path to prompts JSON or JSONL")
-    parser.add_argument("--test_set", action="store_true", help="Evaluate on datasets/clean/test/test_combined.jsonl")
+    parser.add_argument("--test_set", action="store_true", help="Evaluate the held-out test split selected by datasets/active.json")
     parser.add_argument("--max_samples", type=int, default=None, help="Maximum number of test samples to evaluate")
     args = parser.parse_args()
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     
-    prompts_path = PROJECT_ROOT / "datasets" / "clean" / "test" / "test_combined.jsonl" if args.test_set else Path(args.prompts_file)
+    prompts_path = active_release() / "test/test_combined.jsonl" if args.test_set else Path(args.prompts_file)
     prompts = load_prompts(prompts_path, max_samples=args.max_samples)
 
     if torch.cuda.is_available():
@@ -176,7 +211,7 @@ def main() -> None:
     print(f"Loading Base Model ({get_inference_dtype()})...")
     base_model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        torch_dtype=get_inference_dtype(),
+        dtype=get_inference_dtype(),
         attn_implementation="sdpa",
         device_map="auto" if torch.cuda.is_available() else None,
     )
@@ -223,9 +258,10 @@ def main() -> None:
 
         if args.compare and lora_model:
             # Generate Base
-            base_resp, b_toks, b_time, b_tps = generate_response(base_model, tokenizer, prompt_text, args.think)
+            with lora_model.disable_adapter():
+                base_resp, b_toks, b_time, b_tps = generate_response(base_model, tokenizer, prompt_text, args.think, p.get("messages"))
             # Generate LoRA
-            lora_resp, l_toks, l_time, l_tps = generate_response(lora_model, tokenizer, prompt_text, args.think)
+            lora_resp, l_toks, l_time, l_tps = generate_response(lora_model, tokenizer, prompt_text, args.think, p.get("messages"))
 
             print(f"  [Base]: {base_resp[:90]}... ({b_toks} tok | {b_tps:.1f} tps)")
             print(f"  [LoRA]: {lora_resp[:90]}... ({l_toks} tok | {l_tps:.1f} tps)")
@@ -241,7 +277,9 @@ def main() -> None:
             active_model = lora_model if (lora_model and not args.base) else base_model
             model_tag = "LoRA" if (lora_model and not args.base) else "Base"
 
-            resp, toks, elapsed, tps = generate_response(active_model, tokenizer, prompt_text, args.think)
+            context = lora_model.disable_adapter() if args.base and lora_model is not None else nullcontext()
+            with context:
+                resp, toks, elapsed, tps = generate_response(active_model, tokenizer, prompt_text, args.think, p.get("messages"))
             print(f"  [{model_tag}]: {resp}")
             print(f"  └─ {toks} tokens | {elapsed:.2f}s | {tps:.1f} tok/s")
 
@@ -250,6 +288,12 @@ def main() -> None:
             total_tokens += toks
             total_time += elapsed
 
+        item_result["reference"] = p.get("reference", "")
+        if "base_response" in item_result:
+            item_result["base_scores"] = score_reference(item_result["base_response"], item_result["reference"])
+            item_result["lora_scores"] = score_reference(item_result["lora_response"], item_result["reference"])
+        else:
+            item_result["scores"] = score_reference(item_result["response"], item_result["reference"])
         results.append(item_result)
 
     # Compile Reports
@@ -264,6 +308,7 @@ def main() -> None:
         f"- **Total Benchmark Questions:** {len(prompts)}",
         f"- **Total Generated Tokens:** {total_tokens:,}",
         f"- **Average Throughput:** {avg_tps:.2f} tokens/sec",
+        "- **Score interpretation:** Exact match / optional chrF measure reference agreement, not factual or conversational accuracy.",
         "\n---\n",
         "## Benchmark Results by Question\n",
     ]
@@ -271,6 +316,10 @@ def main() -> None:
     for r in results:
         md_lines.append(f"### Question {r['index']}: {r['prompt']}")
         md_lines.append(f"**Category:** `{r['category']}`\n")
+        if r["reference"]:
+            md_lines.append(f"**Reference:** {r['reference']}\n")
+            scores = {k: r[k] for k in ("scores", "base_scores", "lora_scores") if k in r}
+            md_lines.append(f"**Reference scores:** `{json.dumps(scores)}`\n")
 
         if args.compare and lora_model:
             bm = r["base_metrics"]
@@ -317,6 +366,10 @@ def main() -> None:
 
     txt_file = RESULTS_DIR / f"eval_report_{file_timestamp}.txt"
     txt_file.write_text("\n".join(txt_lines), encoding="utf-8")
+    json_file = RESULTS_DIR / f"eval_report_{file_timestamp}.json"
+    json_file.write_text(json.dumps({"mode": eval_mode_name, "model_path": args.model_path,
+        "lora_path": args.lora_path, "prompts_file": str(prompts_path), "think": args.think,
+        "seed": 42, "results": results}, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print("\n" + "=" * 80)
     print("BENCHMARK EVALUATION COMPLETE")

@@ -1,0 +1,4 @@
+-r requirements-inference.txt
+datasets==5.0.0
+trl==1.6.0
+psutil>=7,<8

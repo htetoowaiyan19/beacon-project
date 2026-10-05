@@ -12,7 +12,8 @@ from datetime import datetime
 from pathlib import Path
 
 # Ensure UTF-8 output on Windows
-sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
@@ -22,8 +23,17 @@ from utils.text_normalizer import (
     normalize_myanmar_text,
     standardize_system_prompt,
 )
+from utils.dataset_checks import assert_disjoint, conversation_key, grouped_split, prompt_key
 
-DEFAULT_SYSTEM_PROMPT = "သင်သည် အကူအညီပေးသော မြန်မာ AI Assistant ဦး ဖြစ်ပါသည်။"
+from utils.persona import DEFAULT_SYSTEM_PROMPT
+
+
+def valid_conversation(messages: list[dict]) -> bool:
+    turns = messages[1:] if messages and messages[0]["role"] == "system" else messages
+    return bool(turns) and len(turns) % 2 == 0 and all(
+        message["role"] == ("user" if i % 2 == 0 else "assistant")
+        for i, message in enumerate(turns)
+    )
 
 
 def parse_sample_to_messages(item: dict) -> list[dict] | None:
@@ -48,8 +58,10 @@ def parse_sample_to_messages(item: dict) -> list[dict] | None:
         for msg in item["messages"]:
             if not isinstance(msg, dict):
                 continue
-            role = msg.get("role", "").strip().lower()
-            content = msg.get("content", "").strip()
+            if not isinstance(msg.get("role"), str) or not isinstance(msg.get("content"), str):
+                return None
+            role = msg["role"].strip().lower()
+            content = msg["content"].strip()
             if not role or not content:
                 continue
 
@@ -71,7 +83,7 @@ def parse_sample_to_messages(item: dict) -> list[dict] | None:
         if has_user and has_assistant:
             if cleaned_messages[0]["role"] != "system":
                 cleaned_messages.insert(0, {"role": "system", "content": DEFAULT_SYSTEM_PROMPT})
-            return cleaned_messages
+            return cleaned_messages if valid_conversation(cleaned_messages) else None
         return None
 
     # Case 2: Alpaca format (instruction, input, output)
@@ -179,7 +191,8 @@ def load_and_clean_file(file_path: Path) -> list[dict]:
         if not messages:
             continue
 
-        full_text = " ".join([m["content"] for m in messages])
+        # The inserted Burmese persona must not make an English-only row appear Burmese.
+        full_text = " ".join(m["content"] for m in messages if m["role"] != "system")
         if not is_myanmar_text(full_text):
             continue
 
@@ -195,9 +208,9 @@ def build_unified_dataset(
     test_split_ratio: float = 0.05,
     seed: int = 42,
     include_existing_combined: bool = True,
+    resplit: bool = False,
 ) -> tuple[Path, Path, Path, int, int, int]:
     """Gather all dataset files, clean, deduplicate, back up, and export to train, validation, and test sets."""
-    random.seed(seed)
     output_dir = output_dir or PROJECT_ROOT / "datasets" / "clean"
     train_dir = output_dir / "train"
     val_dir = output_dir / "validation"
@@ -209,12 +222,6 @@ def build_unified_dataset(
     train_file = train_dir / "train_combined.jsonl"
     val_file = val_dir / "validation_combined.jsonl"
     test_file = test_dir / "test_combined.jsonl"
-
-    # 1. Automatic Backup if train_combined.jsonl already exists
-    if train_file.exists() and train_file.stat().st_size > 0:
-        backup_file = train_dir / "train_combined.jsonl.bak"
-        shutil.copy2(train_file, backup_file)
-        print(f"INFO: Created safety backup at {backup_file.name}")
 
     search_dirs = [
         PROJECT_ROOT / "datasets" / "raw" / "train",
@@ -234,6 +241,13 @@ def build_unified_dataset(
 
     # Sort uniquely
     candidate_files = sorted(list(set(candidate_files)), key=lambda x: x.name)
+    if resplit:
+        # Explicitly retire the old split and recover its held-out rows for the new one.
+        for split_name, filename in [("validation", "validation_combined.jsonl"), ("test", "test_combined.jsonl")]:
+            for root in {output_dir, PROJECT_ROOT / "datasets" / "clean"}:
+                path = root / split_name / filename
+                if path.exists() and path not in candidate_files:
+                    candidate_files.append(path)
 
     print("=" * 70)
     print("BEACON MULTI-FORMAT MYANMAR DATASET PIPELINE")
@@ -249,15 +263,12 @@ def build_unified_dataset(
     print("-" * 70)
     print(f"Total raw samples collected: {len(all_samples):,}")
 
-    # Deduplicate based on user question and assistant answer
+    # Deduplicate complete conversations without discarding different later turns.
     seen_pairs: set[str] = set()
     deduped_samples: list[dict] = []
 
     for s in all_samples:
-        msgs = s["messages"]
-        user_msg = next((m["content"] for m in msgs if m["role"] == "user"), "")
-        asst_msg = next((m["content"] for m in msgs if m["role"] == "assistant"), "")
-        key = f"{user_msg.strip()}|||{asst_msg.strip()}"
+        key = conversation_key(s)
 
         if key not in seen_pairs:
             seen_pairs.add(key)
@@ -267,14 +278,26 @@ def build_unified_dataset(
     print(f"Duplicates removed:          {duplicates_removed:,}")
     print(f"Unique clean samples:        {len(deduped_samples):,}")
 
-    random.shuffle(deduped_samples)
-
-    val_count = max(50, int(len(deduped_samples) * val_split_ratio))
-    test_count = max(50, int(len(deduped_samples) * test_split_ratio))
-
-    val_samples = deduped_samples[:val_count]
-    test_samples = deduped_samples[val_count : val_count + test_count]
-    train_samples = deduped_samples[val_count + test_count :]
+    if not resplit and (val_file.exists() or test_file.exists()):
+        if not (val_file.exists() and test_file.exists()):
+            raise ValueError("Both held-out files are required. Use --resplit to create a new split.")
+        # Preserve existing held-out rows exactly, including metadata.
+        val_samples = load_file_records(val_file)
+        test_samples = load_file_records(test_file)
+        assert_disjoint([], val_samples, test_samples)
+        excluded = {prompt_key(s) for s in [*val_samples, *test_samples]}
+        train_samples = [s for s in deduped_samples if prompt_key(s) not in excluded]
+    else:
+        train_samples, val_samples, test_samples = grouped_split(
+            deduped_samples, val_split_ratio, test_split_ratio, seed
+        )
+    assert_disjoint(train_samples, val_samples, test_samples)
+    if not train_samples:
+        raise ValueError("No training samples remain after excluding held-out prompt groups.")
+    # Back up all artifacts only after validation succeeds.
+    for path in (train_file, val_file, test_file):
+        if path.exists() and path.stat().st_size:
+            shutil.copy2(path, path.with_suffix(path.suffix + ".bak"))
 
     with train_file.open("w", encoding="utf-8") as f:
         for s in train_samples:
@@ -291,19 +314,29 @@ def build_unified_dataset(
     print("=" * 70)
     print("DATASET COMPILATION COMPLETE")
     print("=" * 70)
-    print(f"Train File:      {train_file.relative_to(PROJECT_ROOT)} ({len(train_samples):,} samples)")
-    print(f"Validation File: {val_file.relative_to(PROJECT_ROOT)} ({len(val_samples):,} samples)")
-    print(f"Test File:       {test_file.relative_to(PROJECT_ROOT)} ({len(test_samples):,} samples)")
+    print(f"Train File:      {train_file} ({len(train_samples):,} samples)")
+    print(f"Validation File: {val_file} ({len(val_samples):,} samples)")
+    print(f"Test File:       {test_file} ({len(test_samples):,} samples)")
     print("=" * 70)
 
     return train_file, val_file, test_file, len(train_samples), len(val_samples), len(test_samples)
 
 
 if __name__ == "__main__":
+    # Legacy ingestion is opt-in: never silently regenerate the retired corpus.
+    if "--legacy" not in sys.argv:
+        if len(sys.argv) > 1:
+            raise SystemExit("Use scripts/build_seminar_dataset.py for the active release; legacy options require --legacy.")
+        from build_seminar_dataset import build as build_seminar
+        build_seminar()
+        raise SystemExit(0)
+    sys.argv.remove("--legacy")
     parser = argparse.ArgumentParser(description="Build clean combined Burmese dataset from diverse formats (train, validation, test)")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for shuffling")
     parser.add_argument("--val-ratio", type=float, default=0.05, help="Validation split ratio (default: 0.05)")
     parser.add_argument("--test-ratio", type=float, default=0.05, help="Test split ratio (default: 0.05)")
+    parser.add_argument("--output-dir", type=Path, default=None, help="Destination clean dataset directory")
+    parser.add_argument("--resplit", action="store_true", help="Explicitly retire old holdouts and create a grouped split")
     parser.add_argument(
         "--no-existing",
         action="store_true",
@@ -312,6 +345,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     build_unified_dataset(
+        output_dir=args.output_dir,
+        resplit=args.resplit,
         val_split_ratio=args.val_ratio,
         test_split_ratio=args.test_ratio,
         seed=args.seed,

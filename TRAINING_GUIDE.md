@@ -1,4 +1,22 @@
+# Checkpoint recovery update (2026-10-05)
+
+Current defaults save every 25 optimizer steps and retain 3 checkpoints; validation runs every 250 steps. Use **Stop safely**, wait for the process to finish saving, then **Resume run** next time. CLI resume uses the original arguments plus `--resume_from_checkpoint latest`. Fresh CLI runs require an empty output directory. See [TRAINING_UI.md](TRAINING_UI.md) for the current workflow; older examples below describe earlier defaults.
+
+> 2026-10-05: The current scanned release is it_seminar_v3 (14,257 total; 12,759 train). See [FINAL_DATASET_REVIEW.md](FINAL_DATASET_REVIEW.md) and [TRAINING_PLAN.md](TRAINING_PLAN.md). Earlier release details below are historical.
+
+> 2026-10-04 update: launch `train_ui.bat` for desktop training controls and live stats; see [TRAINING_UI.md](TRAINING_UI.md). `it_seminar_v2` includes all seven team files and contains 12,813 retained conversations. Follow [TRAINING_PLAN.md](TRAINING_PLAN.md); earlier counts and commands below are historical. The active chat app is model-only.
+
+> Current seminar release: **it_seminar_v1**, 8,250 conversations including the new team-collected files. Follow [TRAINING_PLAN.md](TRAINING_PLAN.md) for current commands. Earlier paths/counts below document prior reviews.
+
+> Recovery update: [burmese_recovered_v1](datasets/releases/burmese_recovered_v1/README.md) restores 4,647 older examples alongside the 150 authored dialogues. It is now the default training/evaluation candidate; original archive files remain unchanged.
+
+> Current dataset: [burmese_fluency_v2](datasets/README.md), a 150-conversation review candidate, supersedes the v1 paths and counts below. Source text, versioned releases, user reviews, and archived data now have separate directories.
+
+> Dataset update (2026-10-03): The legacy corpus and generator are archived. Current training/evaluation defaults use `datasets/burmese_fluency_v1/`, a 50-conversation synthetic style seed awaiting native-speaker review and expansion. Run `python scripts/build_fluency_dataset.py` to rebuild it. New checkpoints default to `outputs/checkpoints-fluency-v1`. Dataset counts, paths, ingestion instructions, and training commands below describe the previous corpus and are historical. See [DATASET_QUALITY_REPORT.md](DATASET_QUALITY_REPORT.md) for current findings and limitations.
+
 # Comprehensive Guide: Training & Dataset Pipeline
+
+> Review update (2026-10-03): use the grouped dataset and next-run command in [PROJECT_REVIEW.md](PROJECT_REVIEW.md). Ordinary rebuilds preserve held-out splits; `--resplit` explicitly retires them. Training now rejects overlapping opening prompts and uses assistant-only loss. Historical full-sequence losses are not directly comparable with new assistant-only losses.
 
 This guide explains how to prepare datasets, handle different file formats (`.jsonl`, `.parquet`, `.csv`, `.tsv`, `.json`), clean Myanmar text, and train your model step-by-step on your RTX 5060 Ti (16GB).
 

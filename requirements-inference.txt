@@ -1,0 +1,7 @@
+# Validated against the existing project environment. Install CUDA PyTorch separately.
+torch==2.11.0
+transformers==5.11.0
+peft==0.19.1
+accelerate==1.14.0
+fastapi==0.141.1
+uvicorn==0.53.0

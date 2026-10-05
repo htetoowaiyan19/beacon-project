@@ -1,0 +1,11 @@
+{
+  "version": "it_seminar_v3",
+  "release_directory": "releases/it_seminar_v3",
+  "manifest": "releases/it_seminar_v3/manifest.json",
+  "guide": "releases/it_seminar_v3/README.md",
+  "raw_team_data": "freshes",
+  "normalized_team_data": "sources/human_collected_v3",
+  "saved_decisions": "reviews/it_seminar_v3.decisions.json",
+  "final_audit": "releases/it_seminar_v3/review/final_audit/summary.json",
+  "note": "Paths relative to datasets/. Whole-release mechanical/token scan passed on 2026-10-05. Content approval remains pending; see FINAL_DATASET_REVIEW.md."
+}
