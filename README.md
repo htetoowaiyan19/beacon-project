@@ -7,6 +7,9 @@ see the measured results in [RELEASE_V1.md](RELEASE_V1.md).
 
 ## Run the project
 
+For detailed installation options, verification, start/stop commands and
+troubleshooting, read [SETUP.md](SETUP.md).
+
 On the configured seminar machine, double-click **show_day_ui.bat**. Start Backend
 and Frontend from the panel, then open the visitor page on the front monitor.
 The members' monitor shows logs, GPU statistics and submitted visitor chats.

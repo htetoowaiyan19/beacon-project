@@ -1,5 +1,8 @@
 # BEACON on the M2 MacBook Air (8 GB)
 
+For the complete installation walkthrough and other setup options, see
+[SETUP.md](SETUP.md).
+
 Use **archives/BEACON-v1.0.0-m2-air.zip** for show day. It contains your trained
 Burmese adapter merged into Qwen3-4B and quantized to **Q4_K_M GGUF**, the visitor
 chat, members' panel and a bundled Apple Silicon llama.cpp runtime.

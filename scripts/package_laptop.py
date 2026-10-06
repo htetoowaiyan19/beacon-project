@@ -31,7 +31,7 @@ def main():
         raise ValueError('Bundled runtime checksum mismatch')
     names = ['beacon-release.json', 'LICENSE', 'requirements-laptop.txt',
              'setup_laptop.command', 'start_laptop.command', 'chat_laptop.command',
-             'M2_AIR.md', 'SHOW_DAY.md', 'API.md', 'scripts/setup_laptop.py',
+             'M2_AIR.md', 'SETUP.md', 'SHOW_DAY.md', 'API.md', 'scripts/setup_laptop.py',
              'scripts/run_laptop.py', 'scripts/smoke_laptop.py', 'scripts/verify_package.py',
              'scripts/show_day_ui.py', 'scripts/show_day_backend.py', 'scripts/show_day_frontend.py',
              'scripts/utils/show_day_control.py', 'scripts/utils/llama_runtime.py',
