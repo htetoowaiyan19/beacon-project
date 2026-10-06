@@ -115,7 +115,10 @@ def test_real_proxy_streams_and_blocks_operator_routes():
         def page():
             with urlopen(url, timeout=2) as response: return response.read().decode()
         html = wait_until(page)
-        assert 'class="visitor-mode"' in html and 'monitor-notice' in html
+        assert 'class="visitor-mode"' in html and 'href="chat.html"' in html
+        with urlopen(url + '/chat.html', timeout=2) as response:
+            chat = response.read().decode()
+        assert 'class="visitor-mode"' in chat and 'monitor-notice' in chat
         for path in ('/api/operator/snapshot', '/api/operator/shutdown', '/docs', '/README.md', '/%2e%2e/README.md'):
             with pytest.raises(HTTPError) as error:
                 urlopen(url + path, timeout=2)

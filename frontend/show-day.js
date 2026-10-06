@@ -16,7 +16,5 @@
   if (Date.now() - lastTyping > 5000) { lastTyping = Date.now(); signal('typing'); }
  });
  document.getElementById('stop').addEventListener('click', () => signal('stop'));
- document.getElementById('export').addEventListener('click', () => signal('save'));
- document.getElementById('messages').addEventListener('click', event => { if (event.target.closest('.copy')) signal('copy'); });
  signal('connected'); setInterval(() => signal('heartbeat'), 15000);
 })();

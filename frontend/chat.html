@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#ffffff"><meta name="description" content="Chat with B.E.A.C.O.N."><title>Chat · B.E.A.C.O.N.</title><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="chat-page">
+
+ <header class="site-header"><div class="header-inner">
+  <a class="brand" href="index.html"><img src="beacon-logo.png" alt="B.E.A.C.O.N. logo" width="36" height="36"><span>B.E.A.C.O.N.</span></a><div class="chat-badge" id="version">v1</div>
+  <nav><a href="index.html">Home</a><a href="index.html#capabilities">Capabilities</a></nav>
+  <button id="clear" class="new-chat" type="button">New chat</button>
+ </div></header>
+
+ <main class="chat-main">
+  <div class="chat-card">
+   <div id="messages" role="log" aria-live="polite" aria-relevant="additions"><div class="welcome">
+    <div class="welcome-title"><span class="gradient-text">Hello.</span><span class="muted"> What can I help you find?</span></div>
+    <div class="suggestions">
+     <button type="button" data-prompt="Explain how large language models work, simply">Explain how large language models work, simply</button>
+     <button type="button" data-prompt="Write a short welcome message in Burmese and English">Write a short welcome message in Burmese and English</button>
+     <button type="button" data-prompt="Give me a 5-day study plan for learning Python">Give me a 5-day study plan for learning Python</button>
+     <button type="button" data-prompt="Summarize the history of lighthouses in three sentences">Summarize the history of lighthouses in three sentences</button>
+    </div>
+   </div></div>
+   <div class="composer-wrap">
+    <form id="form" class="composer"><label class="sr-only" for="prompt">Your message</label><textarea id="prompt" rows="1" placeholder="Ask B.E.A.C.O.N. anything…" required maxlength="32000"></textarea>
+     <button id="send" class="send" type="submit" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg></button>
+     <button id="stop" class="send" type="button" aria-label="Stop reply" hidden><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="3"></rect></svg></button>
+    </form>
+    <p id="activity" class="chat-line" role="status"></p><p id="error" class="chat-line error" role="alert"></p>
+    <p id="monitor-notice" class="chat-line notice" hidden>Seminar demo: team members can view submitted chats live. Please avoid personal or sensitive information.</p>
+    <div class="disclaimer">B.E.A.C.O.N. can make mistakes. Check important information.</div>
+    <div class="sr-only" aria-live="polite"><span id="status-dot"></span><span id="status-label">Connecting…</span> <span id="health"></span> <span id="metrics"></span></div>
+   </div>
+  </div>
+ </main>
+</div>
+<script src="landing.js"></script><script src="show-day.js"></script><script src="stream.js"></script><script src="app.js"></script></body></html>

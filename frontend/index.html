@@ -1,12 +1,69 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f7f2"><meta name="description" content="BEACON — a local Burmese AI companion for learning and IT discussion."><title>BEACON — IT Seminar v1</title><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"></head>
-<body><main><aside class="sidebar">
-<a class="brand" href="/" aria-label="BEACON home"><span class="brand-mark" aria-hidden="true">B</span><span>BEACON<small>Burmese AI companion</small></span></a>
-<div class="release-tag" id="version">IT Seminar · v1.0.0</div><button id="clear" class="new-chat">＋ New conversation</button>
-<div class="sidebar-note"><span class="eyebrow">A little help, in your language</span><p>Learn something new.<br>Talk an idea through.<br>Make IT a little clearer.</p></div>
-<details class="settings"><summary>Conversation settings</summary><label><input id="base" type="checkbox"> Compare with base model</label><label><input id="think" type="checkbox"> Thinking mode <small>Replies may take longer</small></label><label for="temperature">Temperature</label><input id="temperature" type="number" min="0" max="2" step="0.1" value="0.7"><label for="tokens">Response token limit</label><input id="tokens" type="number" min="16" max="2048" value="512"><label for="system">Custom instructions</label><textarea id="system" rows="4" placeholder="Optional. Leave blank for BEACON's companion instructions."></textarea></details>
-<div class="model-status"><span class="status-dot" id="status-dot"></span><strong id="status-label">Connecting…</strong><p id="health">Checking the local model</p><p id="metrics"></p></div><a class="docs-link" href="/docs" target="_blank" rel="noopener">API documentation ↗</a></aside>
-<section class="workspace"><header><div><span class="eyebrow">YOUR SPACE TO ASK</span><h1>What’s on your mind?</h1></div><button id="export" class="quiet">Save chat ↓</button></header>
-<section class="chat" aria-label="Conversation"><div id="messages" role="log" aria-live="polite" aria-relevant="additions"><div class="welcome"><span class="welcome-mark" aria-hidden="true">✦</span><h2 lang="my">မင်္ဂလာပါ။ ဘာကူညီပေးရမလဲ။</h2><p>Ask in Burmese or English.<br>We can learn, chat, or explore an IT topic together.</p><div class="suggestions"><button data-prompt="TCP နဲ့ UDP ဘာကွာလဲ။">Explain TCP &amp; UDP <span>↗</span></button><button data-prompt="အားပေးစကားလေး ပြောပေးပါ။">A little encouragement <span>↗</span></button><button data-prompt="What is a process in an operating system?">Explore operating systems <span>↗</span></button></div></div></div>
-<div class="composer-wrap"><p id="activity" role="status"></p><form id="form"><label class="sr-only" for="prompt">Your message</label><textarea id="prompt" rows="2" placeholder="မေးချင်တာလေး ရေးပေးပါ…" required maxlength="32000"></textarea><button id="send" type="submit" aria-label="Send message">Send ↑</button><button id="stop" type="button" hidden>Stop ■</button></form><p id="error" role="alert"></p><p id="monitor-notice" class="monitor-notice" hidden>Seminar demo: team members can view submitted chats live. Please avoid personal or sensitive information.</p><p class="footnote">BEACON v1 · Seminar release · Double-check important answers.<span>Enter to send · Shift + Enter for a new line</span></p></div></section></section>
-</main><script src="show-day.js"></script><script src="stream.js"></script><script src="app.js"></script></body></html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#ffffff"><meta name="description" content="B.E.A.C.O.N. — a conversational AI model. Ask in plain language, get clear answers."><title>B.E.A.C.O.N.</title><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="page">
+
+ <header class="site-header"><div class="header-inner">
+  <a class="brand" href="#top"><img src="beacon-logo.png" alt="B.E.A.C.O.N. logo" width="36" height="36"><span>B.E.A.C.O.N.</span></a>
+  <nav><a href="#chat">Try it</a><a href="#capabilities">Capabilities</a></nav>
+  <a class="btn btn-primary btn-sm" href="chat.html">Start chatting</a>
+ </div></header>
+
+ <section id="top" class="hero">
+  <div class="hero-dots" aria-hidden="true"></div><div class="hero-glow teal" aria-hidden="true"></div><div class="hero-glow blue" aria-hidden="true"></div>
+  <div class="hero-grid">
+   <div class="hero-copy" data-reveal>
+    <div class="pill"><span></span>Large Language Model</div>
+    <h1>A guiding light for <span class="shimmer">every question.</span></h1>
+    <p>B.E.A.C.O.N. is a conversational AI model. Ask in plain language, get clear answers, and keep the conversation going.</p>
+    <div class="hero-actions"><a class="btn btn-primary btn-lg" href="chat.html">Start a conversation</a><a class="btn btn-secondary btn-lg" href="#capabilities">See capabilities</a></div>
+   </div>
+   <div class="hero-visual"><div class="beacon" aria-hidden="true">
+    <div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="sweep"></div>
+    <div class="orbit"><span></span></div>
+    <div class="plate"><img src="beacon-logo.png" alt=""></div>
+   </div></div>
+  </div>
+ </section>
+
+ <section id="chat" class="chat-section"><div class="chat-inner">
+  <div class="section-head center" data-reveal><div class="kicker">Try it</div><h2>Talk to B.E.A.C.O.N.</h2><p>Pick a prompt or type your own.</p></div>
+  <div class="chat-card demo" data-reveal>
+   <div class="chat-top"><img src="beacon-logo.png" alt="" width="28" height="28"><div class="chat-name">B.E.A.C.O.N.</div><div class="chat-badge">preview</div><a class="new-chat" href="chat.html">New chat</a></div>
+   <div class="demo-log"><div class="welcome">
+    <div class="welcome-title"><span class="gradient-text">Hello.</span><span class="muted"> What can I help you find?</span></div>
+    <div class="suggestions">
+     <a href="chat.html?q=Explain%20how%20large%20language%20models%20work%2C%20simply">Explain how large language models work, simply</a>
+     <a href="chat.html?q=Write%20a%20short%20welcome%20message%20in%20Burmese%20and%20English">Write a short welcome message in Burmese and English</a>
+     <a href="chat.html?q=Give%20me%20a%205-day%20study%20plan%20for%20learning%20Python">Give me a 5-day study plan for learning Python</a>
+     <a href="chat.html?q=Summarize%20the%20history%20of%20lighthouses%20in%20three%20sentences">Summarize the history of lighthouses in three sentences</a>
+    </div>
+   </div></div>
+   <div class="composer-wrap">
+    <form class="composer" action="chat.html" method="get"><label class="sr-only" for="demo-prompt">Your message</label><textarea id="demo-prompt" name="q" rows="1" placeholder="Ask B.E.A.C.O.N. anything…" maxlength="32000"></textarea>
+     <button class="send" type="submit" aria-label="Open chat"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg></button>
+    </form>
+    <div class="disclaimer">B.E.A.C.O.N. can make mistakes. Check important information.</div>
+   </div>
+  </div>
+ </div></section>
+
+ <section id="capabilities" class="capabilities"><div class="cap-inner">
+  <div class="section-head" data-reveal><div class="kicker">Capabilities</div><h2>Built to understand, explain and assist.</h2></div>
+  <div class="features">
+   <div class="feature" data-reveal><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div><div class="feature-title">Natural conversation</div><div class="feature-body">Ask follow-up questions and refine answers. B.E.A.C.O.N. keeps the context of the whole chat.</div></div>
+   <div class="feature" data-reveal><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"></path></svg></div><div class="feature-title">Multilingual</div><div class="feature-body">Write in the language you think in. Replies come back in the same language.</div></div>
+   <div class="feature" data-reveal><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"></path></svg></div><div class="feature-title">Learning and knowledge</div><div class="feature-body">Explanations, summaries and study plans that break complex topics into clear steps.</div></div>
+   <div class="feature" data-reveal><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"></path></svg></div><div class="feature-title">Writing and code</div><div class="feature-body">Draft messages, rewrite text, and get help reading or writing code.</div></div>
+  </div>
+ </div></section>
+
+ <section class="cta-wrap"><div class="cta" data-reveal>
+  <div class="cta-glow indigo" aria-hidden="true"></div><div class="cta-glow teal" aria-hidden="true"></div>
+  <h2>Ask your first question.</h2><p>Free to try. No setup required.</p>
+  <a class="btn btn-primary btn-lg" href="chat.html">Start chatting</a>
+ </div></section>
+
+ <footer class="site-footer"><div class="footer-inner"><img src="beacon-logo.png" alt="" width="24" height="24"><span class="footer-brand">B.E.A.C.O.N.</span><span class="footer-copy">© 2026 B.E.A.C.O.N.</span></div></footer>
+</div>
+<script src="landing.js"></script></body></html>

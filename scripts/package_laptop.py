@@ -44,7 +44,8 @@ def main():
     for path in (ROOT / 'backend').rglob('*.py'):
         if '__pycache__' not in path.parts:
             entries[path.relative_to(ROOT).as_posix()] = path
-    for name in ('index.html', 'app.js', 'stream.js', 'show-day.js', 'style.css', 'favicon.svg'):
+    for name in ('index.html', 'chat.html', 'app.js', 'stream.js', 'show-day.js', 'landing.js', 'style.css', 'favicon.svg', 'beacon-logo.png',
+                 'fonts/inter-latin.woff2', 'fonts/jetbrains-mono-latin.woff2', 'fonts/noto-sans-myanmar.woff2'):
         entries['frontend/' + name] = ROOT / 'frontend' / name
     smoke = ROOT / 'outputs/laptop_export/smoke.json'
     if smoke.exists():

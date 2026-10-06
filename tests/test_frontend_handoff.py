@@ -9,6 +9,7 @@ from backend.dev_app import app
 def test_preview_routes_and_stream():
     with TestClient(app) as client:
         assert client.get('/').status_code == 200
+        assert client.get('/chat.html').status_code == 200
         assert client.get('/stream.js').status_code == 200
         assert 'mock' in client.get('/api/health').json()['gpu']['device']
         response = client.post('/api/chat/stream', json={'message': 'Hello'})

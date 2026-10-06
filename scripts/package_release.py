@@ -27,7 +27,7 @@ def package_files(root: Path = ROOT) -> dict[str, Path]:
         or (p.name.startswith('requirements-') and p.suffix == '.txt'))]
     for directory, suffixes in (
         ('backend', {'.py'}), ('scripts', {'.py', '.html'}),
-        ('frontend', {'.md', '.html', '.css', '.js', '.svg'}),
+        ('frontend', {'.md', '.html', '.css', '.js', '.svg', '.png', '.woff2'}),
         ('tests', {'.py', '.cjs'}), ('prompts', {'.json'}),
         ('datasets', {'.md', '.json', '.jsonl', '.csv', '.tsv', '.txt',
                       '.sha256', '.html', '.parquet'}),

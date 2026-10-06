@@ -10,7 +10,9 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 GET_API = {'/api/health', '/api/config'}
 POST_API = {'/api/chat/stream', '/api/visitor/event'}
-ASSETS = {'/app.js', '/stream.js', '/show-day.js', '/style.css', '/favicon.svg'}
+PAGES = {'/': 'index.html', '/index.html': 'index.html', '/chat.html': 'chat.html'}
+ASSETS = {'/app.js', '/stream.js', '/show-day.js', '/landing.js', '/style.css', '/favicon.svg', '/beacon-logo.png',
+          '/fonts/inter-latin.woff2', '/fonts/jetbrains-mono-latin.woff2', '/fonts/noto-sans-myanmar.woff2'}
 
 
 class VisitorHandler(SimpleHTTPRequestHandler):
@@ -22,8 +24,8 @@ class VisitorHandler(SimpleHTTPRequestHandler):
         path = urlsplit(self.path).path
         if path in GET_API:
             return self.proxy('GET')
-        if path in ('/', '/index.html'):
-            html = (ROOT / 'frontend/index.html').read_text(encoding='utf-8')
+        if path in PAGES:
+            html = (ROOT / 'frontend' / PAGES[path]).read_text(encoding='utf-8')
             payload = html.replace('<body>', '<body class="visitor-mode">', 1).encode('utf-8')
             self.send_response(200)
             self.send_header('Content-Type', 'text/html; charset=utf-8')

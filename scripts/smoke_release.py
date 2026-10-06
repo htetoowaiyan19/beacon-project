@@ -10,7 +10,7 @@ BASE = 'http://127.0.0.1:8000'
 
 def main():
     checks = {}
-    for path in ('/', '/app.js', '/style.css', '/favicon.svg', '/docs', '/openapi.json', '/api/config', '/api/health'):
+    for path in ('/', '/chat.html', '/app.js', '/style.css', '/favicon.svg', '/docs', '/openapi.json', '/api/config', '/api/health'):
         with urlopen(BASE + path, timeout=30) as response:
             checks[path] = response.status
     replies = []
