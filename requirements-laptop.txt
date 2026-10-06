@@ -1,0 +1,4 @@
+# Inference only: llama.cpp performs model work; PyTorch is not needed.
+fastapi==0.141.1
+uvicorn==0.53.0
+psutil>=7,<8

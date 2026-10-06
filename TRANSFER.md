@@ -37,7 +37,8 @@ Enable Tcl/Tk in the Windows Python installer for the desktop panels.
 For CPU-only setup, use `python scripts/setup_device.py --cpu`. CPU inference needs
 enough system RAM and will be slower. On Linux/macOS, use `.venv/bin/python` in
 commands instead of `.venv\Scripts\python.exe`; Tkinter may require a separate OS
-package. macOS uses the CPU path; Apple GPU inference is not implemented.
+package. The original Transformers runtime uses CPU on macOS. For Apple GPU
+inference, use the separate trained GGUF laptop edition in [M2_AIR.md](M2_AIR.md).
 
 ## Start and stop
 

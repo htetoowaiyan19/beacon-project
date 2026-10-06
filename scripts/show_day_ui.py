@@ -30,7 +30,9 @@ class ShowDayUI:
         self.status = tk.StringVar(value='Start Backend, then Frontend. Move the visitor browser to the front monitor.')
         self.server_labels = {}; self.stat_labels = {}; self.buttons = []; self.logs = {}
         window.title('BEACON · Show day — Members control')
-        window.geometry('1240x860'); window.minsize(1040, 720)
+        width = max(1040, min(1240, window.winfo_screenwidth() - 80))
+        height = max(720, min(860, window.winfo_screenheight() - 120))
+        window.geometry(f'{width}x{height}'); window.minsize(1040, 720)
         window.configure(background='#f1f5ef')
         style = ttk.Style(window); style.theme_use('clam')
         style.configure('.', font=('Segoe UI', 10), background='#f1f5ef', foreground='#20352d')
@@ -216,7 +218,7 @@ class ShowDayUI:
                    else 'Adapter missing' if gpu.get('adapter_available') is False
                    else 'Loading / waiting' if counts['active'] else 'Not loaded yet')
         self.stat_labels['Adapter'].set(adapter)
-        self.stat_labels['VRAM'].set(f"{gpu.get('vram_allocated_gb',0)} GB allocated\n{gpu.get('vram_reserved_gb',0)} GB reserved")
+        self.stat_labels['VRAM'].set(f"Native RAM: {gpu.get('native_process_ram_gb') if gpu.get('native_process_ram_gb') is not None else 'unavailable'} GB\nSystem available: {gpu.get('system_available_ram_gb') if gpu.get('system_available_ram_gb') is not None else 'unavailable'} GB" if gpu.get('shared_memory') else f"{gpu.get('vram_allocated_gb',0)} GB allocated\n{gpu.get('vram_reserved_gb',0)} GB reserved")
         self.stat_labels['GPU'].set('Preview · no model' if mock else f"{driver['utilization']:.0f}% busy · {driver['temperature']:.0f}°C\n{driver['used_mb']/1024:.1f}/{driver['total_mb']/1024:.1f} GB" if driver else 'Driver stats unavailable')
         self.stat_labels['Requests'].set(f"{counts['active']} active · {counts['total']} total\n{counts['completed']} done · {counts['failed']} failed\n{counts['cancelled']} cancelled")
         self.stat_labels['Last reply'].set('Synthetic metrics' if mock else f"First text: {metrics.get('time_to_first_text_seconds','—')}s\n{metrics.get('prompt_tokens','—')} in / {metrics.get('total_tokens','—')} out\n{metrics.get('tokens_per_second','—')} tok/s · queue {metrics.get('queue_seconds','—')}s")

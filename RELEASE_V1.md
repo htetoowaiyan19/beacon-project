@@ -52,6 +52,11 @@ Local smoke report: `outputs/release_checks/v1-smoke.json`.
 
 ## Share or restore
 
+For the **M2 Air with 8 GB RAM**, use the separate trained Q4_K_M GGUF/Metal
+package in [M2_AIR.md](M2_AIR.md). It includes the same chat and monitoring UI.
+Quantized answers can differ; the guide records the limited comparison and review
+requirements. The original frozen SafeTensors adapter remains unchanged.
+
 For the seminar's two-monitor setup, double-click **show_day_ui.bat**.
 The desktop panel controls the model backend and visitor frontend separately,
 and shows logs, model statistics and live conversations. See **SHOW_DAY.md**.

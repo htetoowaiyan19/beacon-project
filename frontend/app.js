@@ -15,11 +15,17 @@ async function health() {
  try {
   const response = await fetch('/api/health'); if (!response.ok) throw new Error('Health check failed');
   const { gpu, release } = await response.json();
+  if (gpu.runtime === 'llama.cpp') {
+   $('base').checked = false; $('base').disabled = true;
+   $('think').checked = false; $('think').disabled = true;
+   $('tokens').max = gpu.max_new_tokens;
+   if (Number($('tokens').value) > gpu.max_new_tokens) $('tokens').value = gpu.max_new_tokens;
+  }
   if (release) $('version').textContent = `${release.edition} · v${release.version}`;
   const preview = gpu.device.toLowerCase().includes('mock');
   $('status-label').textContent = preview ? 'Frontend preview' : gpu.is_loaded ? (gpu.has_lora ? 'Trained model ready' : 'Base model loaded') : gpu.adapter_available === false ? 'Adapter missing' : 'Ready to chat';
   $('status-dot').className = gpu.adapter_available === false && !preview ? 'status-dot offline' : 'status-dot online';
-  $('health').textContent = `${gpu.device}\n${gpu.is_loaded ? 'VRAM: ' + gpu.vram_allocated_gb + ' GB' : 'The first reply takes a little longer while the model loads.'}`;
+  $('health').textContent = `${gpu.device}\n${gpu.is_loaded ? (gpu.shared_memory ? 'Native process RAM: ' + (gpu.native_process_ram_gb ?? 'unavailable') + ' GB' : 'VRAM: ' + gpu.vram_allocated_gb + ' GB') : 'The first reply takes a little longer while the model loads.'}`;
  } catch { $('status-label').textContent = 'Server offline'; $('status-dot').className = 'status-dot offline'; $('health').textContent = 'Start run_trained_chat.bat and refresh this page.'; }
 }
 $('clear').onclick = () => { if (controller) return; history = []; globalThis.beaconVisitor?.newChat(); $('messages').innerHTML = welcome; $('metrics').textContent = ''; $('error').textContent = ''; $('activity').textContent = ''; $('prompt').value = ''; $('prompt').focus(); };
@@ -52,7 +58,7 @@ $('form').onsubmit = async event => {
   });
   if (!reply.body.textContent.trim()) throw new Error('No answer was produced. Try again with Thinking mode off.');
   history.push({ role: 'user', content: message }, { role: 'assistant', content: reply.body.textContent }); reply.card.classList.remove('partial');
-  $('activity').textContent = (finishReason === 'length' ? 'Response limit reached. Ask a follow-up or increase the token limit. ' : '') + (droppedHistory ? 'BEACON used recent conversation context to keep this reply fast. Earlier messages remain on screen.' : '');
+  $('activity').textContent = (finishReason === 'length' ? (Number($('tokens').max) <= 192 ? 'Laptop response limit reached. Ask a focused follow-up. ' : 'Response limit reached. Ask a follow-up or increase the token limit. ') : '') + (droppedHistory ? 'BEACON used recent conversation context to keep this reply fast. Earlier messages remain on screen.' : '');
  } catch (error) {
   $('error').textContent = error.name === 'AbortError' ? 'Reply stopped. The partial response was not added to conversation history.' : error.message;
   if (!reply.body.textContent) reply.body.textContent = 'No completed reply.';

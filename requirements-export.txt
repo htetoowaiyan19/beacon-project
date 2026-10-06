@@ -1,0 +1,3 @@
+# Desktop conversion only; not required by the M2 inference package.
+-r requirements-inference.txt
+sentencepiece==0.2.2

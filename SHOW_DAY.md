@@ -1,5 +1,8 @@
 # BEACON show-day control panel
 
+For the M2 Air, launch with `sh start_laptop.command`; see [M2_AIR.md](M2_AIR.md)
+for the smaller Metal/GGUF package. The controls and visitor monitoring work the same way.
+
 Double-click **show_day_ui.bat**. The Python desktop dashboard belongs on the
 members' monitor; the browser belongs on the visitors' monitor.
 

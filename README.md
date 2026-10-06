@@ -19,6 +19,11 @@ The API documentation is at `/docs` and in [API.md](API.md).
 
 ## Move to another device
 
+**M2 MacBook Air with 8 GB RAM:** use the smaller
+`archives/BEACON-v1.0.0-m2-air.zip` with trained Q4_K_M GGUF and Metal inference.
+See [M2_AIR.md](M2_AIR.md). It retains the visitor page and members' panel and needs
+no PyTorch for inference. The full package below preserves training data and weights.
+
 Use `archives/BEACON-v1.0.0-portable.zip`, which includes source, the complete base
 model, trained adapter, datasets and review provenance. Follow
 [TRANSFER.md](TRANSFER.md) to verify it and install dependencies in a fresh
@@ -70,6 +75,7 @@ adapter. Select another evaluated adapter explicitly with `BEACON_LORA_PATH` and
 | `datasets/active.json`, `datasets/releases/` | Selected dataset and frozen splits |
 | `datasets/freshes/`, `datasets/sources/`, `datasets/reviews/` | Originals and preparation evidence |
 | `models/qwen3-4b/`, `models/adapters/beacon-v1.0.0/` | Base weights and serving adapter |
+| `models/gguf/`, `runtime/` | Quantized laptop exports and bundled native runtime |
 | `outputs/` | Local training checkpoints, logs and evaluation results |
 | `archives/` | Transfer packages and preserved history |
 

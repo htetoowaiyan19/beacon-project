@@ -2,6 +2,8 @@
 from __future__ import annotations
 import logging
 import os
+from contextlib import asynccontextmanager
+import anyio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -16,7 +18,16 @@ from backend.services.show_day_monitor import ShowDayMonitor
 
 def create_app(*, chat_service=None, monitor=None) -> FastAPI:
     logging.basicConfig(level=logging.INFO)
-    app = FastAPI(title="BEACON Burmese AI", version="3.0.0")
+    @asynccontextmanager
+    async def lifespan(app):
+        try:
+            yield
+        finally:
+            service = getattr(app.state.chat_service, '_model_service', None)
+            close = getattr(service, 'close', None)
+            if close:
+                await anyio.to_thread.run_sync(close)
+    app = FastAPI(title="BEACON Burmese AI", version="3.0.0", lifespan=lifespan)
     app.state.chat_service = chat_service or ChatService()
     token = os.getenv('BEACON_MONITOR_TOKEN') if os.getenv('BEACON_SHOW_DAY') == '1' else None
     app.state.show_day_monitor = monitor or (ShowDayMonitor(token) if token else None)

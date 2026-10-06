@@ -17,11 +17,12 @@ def main():
         parser.exit(1, 'Start this backend from show_day_ui.bat.\n')
     os.environ['BEACON_SHOW_DAY'] = '1'
     if not args.preview:
-        from scripts.run_release import verify_release
-        try:
-            os.environ['BEACON_LORA_PATH'] = str(verify_release())
-        except ValueError as exc:
-            parser.exit(1, f'{exc}\n')
+        if os.getenv('BEACON_RUNTIME') != 'gguf':
+            from scripts.run_release import verify_release
+            try:
+                os.environ['BEACON_LORA_PATH'] = str(verify_release())
+            except ValueError as exc:
+                parser.exit(1, f'{exc}\n')
         from backend.app import app
         print('Loading the trained seminar model before accepting visitors…', flush=True)
         app.state.chat_service.model_service.load()

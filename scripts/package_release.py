@@ -22,7 +22,7 @@ def sha256(path: Path) -> str:
 def package_files(root: Path = ROOT) -> dict[str, Path]:
     """Allow only project files; never collect environments, outputs or credentials."""
     files = [p for p in root.iterdir() if p.is_file() and (
-        p.suffix in {'.md', '.bat'} or p.name in {
+        p.suffix in {'.md', '.bat', '.command'} or p.name in {
             'LICENSE', 'beacon-release.json', '.gitignore', '.gitattributes'}
         or (p.name.startswith('requirements-') and p.suffix == '.txt'))]
     for directory, suffixes in (

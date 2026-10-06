@@ -27,6 +27,14 @@ Health returns `status: "online"`, `mode: "model-only"`, and `gpu`. GPU informat
 
 ## POST /api/chat/stream
 
+In the laptop edition, health additionally reports `runtime: "llama.cpp"`,
+`adapter_merged: true`, `shared_memory: true`, `native_process_ram_gb`,
+`system_available_ram_gb`, and the input/output limits. Dedicated VRAM fields are
+`null` because Metal uses shared memory. Native resident RAM is not a measurement
+of all GPU allocations. The trained adapter is merged into the GGUF weights;
+base-model comparison and thinking requests return actionable stream errors.
+The laptop stream also reports `effective_max_new_tokens`, capped at 192.
+
 Send `Content-Type: application/json`.
 
 | Field | Default | Constraints / behavior |

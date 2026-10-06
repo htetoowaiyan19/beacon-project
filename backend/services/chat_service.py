@@ -22,8 +22,13 @@ class ChatService:
     @property
     def model_service(self):
         if self._model_service is None:
-            from backend.services.model_service import ModelService
-            self._model_service = ModelService.get_instance()
+            import os
+            if os.getenv('BEACON_RUNTIME') == 'gguf':
+                from backend.services.gguf_model_service import GGUFModelService
+                self._model_service = GGUFModelService()
+            else:
+                from backend.services.model_service import ModelService
+                self._model_service = ModelService.get_instance()
         return self._model_service
 
     def stream_response(self, user_message: str, conversation_history: list[dict], **kwargs):
