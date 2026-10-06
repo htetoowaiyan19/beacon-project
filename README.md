@@ -1,61 +1,80 @@
-# BEACON - Burmese AI companion
+# BEACON — Burmese AI companion
 
-**BEACON v1.0.0 (IT Seminar)** is ready for local chat. Double-click `run_trained_chat.bat` and open **http://127.0.0.1:8000/**. See [the release guide](RELEASE_V1.md) for the verified adapter, results and sharing instructions.
+**v1.0.0, IT Seminar.** Local Qwen3-4B chat with the trained Burmese LoRA adapter.
+It follows the user's language and polite, casual or close-friend tone. The active
+application is model-only. Burmese fluency and factual accuracy remain uneven;
+see the measured results in [RELEASE_V1.md](RELEASE_V1.md).
 
-Model-only Qwen3-4B chat with Burmese LoRA training and IT conversations. The assistant follows the user's language and tone: polite, casual, or close-friend. Burmese fluency and factual accuracy remain uneven; check important answers.
+## Run the project
 
-## Train using the Python UI
+On the configured seminar machine, double-click **show_day_ui.bat**. Start Backend
+and Frontend from the panel, then open the visitor page on the front monitor.
+The members' monitor shows logs, GPU statistics and submitted visitor chats.
+See [SHOW_DAY.md](SHOW_DAY.md). Closing the panel stops its servers.
 
-**Show day:** double-click `show_day_ui.bat` for separate server controls, logs,
-model stats and live visitor conversations. Put the panel on the members' monitor
-and open the visitor browser on the front monitor. See [SHOW_DAY.md](SHOW_DAY.md).
+For ordinary chat, double-click **run_trained_chat.bat** and visit
+**http://127.0.0.1:8000/**. Press Ctrl+C in its window to stop it. The launcher
+verifies the frozen adapter in `models/adapters/beacon-v1.0.0` before serving.
+The API documentation is at `/docs` and in [API.md](API.md).
 
-**Frontend members:** start with [the frontend team guide](frontend/README.md).
-Its streaming preview needs no GPU, weights or datasets and can run while training
-is active. The API contract is in [API.md](API.md).
+## Move to another device
 
-Git contains source, tools, tests and documentation. Model weights, datasets,
-training outputs and the fifth-year archive are local artifacts shared separately
-by the project owner. A fresh clone needs its own environment and dependencies.
-Do not move or edit active training files while a run is in progress.
+Use `archives/BEACON-v1.0.0-portable.zip`, which includes source, the complete base
+model, trained adapter, datasets and review provenance. Follow
+[TRANSFER.md](TRANSFER.md) to verify it and install dependencies in a fresh
+environment. Python packages and GPU drivers require installation; the ZIP does
+not copy the original machine's virtual environment.
 
-Double-click `train_ui.bat`, or run:
-
-```powershell
-.\.venv\Scripts\python.exe scripts/training_ui.py
-```
-
-Select the datasets and training settings, then Start training. The panel shows status, progress, loss, validation loss, learning rate, RAM/VRAM, checkpoints, a loss plot, and live logs. Stop safely saves before exiting. Each run gets a separate folder under `outputs/training_runs`; existing adapters are preserved. See [the UI guide](TRAINING_UI.md) for setup, controls, run files, and serving a new adapter.
-
-The active IT seminar release has **14,257 conversations**: 12,759 training, 749 validation, and 749 test. It combines team-collected IT data, recovered older examples, and style conversations. See [the final dataset scan](FINAL_DATASET_REVIEW.md). Content review remains pending; see [the training plan](TRAINING_PLAN.md) and [dataset organization](datasets/README.md). Review before training, and keep the test split untouched during parameter selection.
-
-## Run chat
+Rebuild the verified transfer archive after changes:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts/run_server.py --host 127.0.0.1 --port 8000
+.\.venv\Scripts\python.exe scripts/package_release.py
 ```
 
-Or double-click `run_server.bat`. Open `http://localhost:8000`. API docs are available at `/docs`; see [API.md](API.md). Chat output uses Vercel AI SDK UI Message Stream v1. Inference dependencies are in `requirements-inference.txt`; training dependencies are in `requirements-training.txt`. Create a virtual environment and install the appropriate dependencies on a fresh clone.
+Git contains source and documentation. Weights, datasets, training outputs and
+local archives are deliberately excluded. A source-only clone needs those artifacts
+to run the real model.
 
-Base weights are in `models/qwen3-4b`. The server defaults to the frozen release adapter in `models/adapters/beacon-v1.0.0`. The release launcher verifies its checksum before starting. To use another evaluated adapter, set `BEACON_LORA_PATH` to its full adapter folder before starting `scripts/run_server.py`. Training does not automatically replace the serving adapter. Run training and chat separately on the 16 GB GPU.
+## Frontend development
+
+Start with [frontend/README.md](frontend/README.md). Its explicitly labeled mock
+preview needs no GPU or weights. The client is plain HTML, CSS and JavaScript,
+with Vercel AI SDK UI Message Stream v1 over SSE. No frontend build is needed.
+
+The real model processes recent conversation turns within a 2,048-token input
+budget. Older messages remain visible/exportable in the browser. Replies stream
+incrementally, including Burmese text; waiting time and queue time appear in stats.
+
+## Data and optional training
+
+The completed experiment used **14,257 conversations**: 12,759 train, 749
+validation and 749 held-out test. Original team submissions, recovered older IT
+data, review decisions and release manifests are preserved. Read
+[datasets/README.md](datasets/README.md) and
+[FINAL_DATASET_REVIEW.md](FINAL_DATASET_REVIEW.md) for quality findings and remaining
+content review. Do not change these splits when comparing against the completed run.
+
+Double-click **train_ui.bat** for training controls, progress and safe stop/resume.
+See [TRAINING_UI.md](TRAINING_UI.md). Training and chat should run separately on
+the seminar GPU. Training creates a new run; it does not replace the serving
+adapter. Select another evaluated adapter explicitly with `BEACON_LORA_PATH` and
+`scripts/run_server.py`.
 
 ## Project layout
 
 | Path | Purpose |
 | --- | --- |
-| `backend/`, `frontend/` | Model chat API and browser interface |
-| `scripts/training_ui.py`, `scripts/train_lora.py` | Desktop controls and LoRA trainer |
-| `datasets/freshes/` | Original team submissions |
-| `datasets/releases/`, `datasets/active.json` | Prepared releases and active selection |
-| `datasets/archive/`, `datasets/reviews/` | Preserved originals and review decisions |
-| `models/` | Base weights and frozen v1 adapter |
-| `outputs/checkpoints/` | Existing trained adapter |
-| `outputs/training_runs/` | New UI runs, logs, stats, adapters |
-| `outputs/evaluations/` | Audits and benchmark results |
-| `archives/` | Preserved fifth-year retrieval project |
+| `backend/`, `frontend/` | Model API and visitor chat |
+| `scripts/` | Server controls, training, dataset builders, evaluation and packaging |
+| `tests/`, `prompts/` | Automated checks and evaluation prompts |
+| `datasets/active.json`, `datasets/releases/` | Selected dataset and frozen splits |
+| `datasets/freshes/`, `datasets/sources/`, `datasets/reviews/` | Originals and preparation evidence |
+| `models/qwen3-4b/`, `models/adapters/beacon-v1.0.0/` | Base weights and serving adapter |
+| `outputs/` | Local training checkpoints, logs and evaluation results |
+| `archives/` | Transfer packages and preserved history |
 
-## Fifth-year retrieval project
-
-The RAG pipeline has been removed from the active project. Its documents, database/index, OCR weights, source, old frontend, tests and requirements are preserved in [the ZIP](archives/rag_5th_year_2026-10-04.zip). The archive has a SHA-256 sidecar and an internal manifest; all 56 original entries were byte-verified before removal. Extract into a separate project for reuse and read its `RESTORE.md`. Base weights, adapters and training datasets remain here rather than being duplicated into the ZIP.
-
-[PROJECT_REVIEW.md](PROJECT_REVIEW.md) and [TRAINING_REPORT.md](TRAINING_REPORT.md) retain historical findings. Historical losses/token accuracy do not prove factual accuracy or fluent Burmese. Evaluate the reviewed new adapter on held-out IT answers and native-reviewed conversation prompts before the seminar.
+The removed retrieval project remains in
+`archives/rag_5th_year_2026-10-04.zip` for the fifth-year project. Superseded guides,
+unused CLI chat tools and old notebooks are preserved in
+`archives/project_history_2026-10-06.zip` and Git history. These archives are
+separate from the transfer package; the current app does not need them.

@@ -247,7 +247,7 @@ def main() -> None:
     train_path = Path(args.train_file)
     if not train_path.exists():
         print(f"ERROR: Training file not found: {train_path}")
-        print("Please run `python scripts/build_dataset.py` first to generate the combined dataset.")
+        print("Restore the dataset release selected by datasets/active.json; see datasets/README.md.")
         sys.exit(1)
 
     check_gpu_kernel_support()

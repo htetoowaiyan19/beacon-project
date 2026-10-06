@@ -52,4 +52,7 @@ def test_production_training_arguments_match_installed_trl():
     module = ast.parse(path.read_text(encoding="utf-8"))
     call = next(n for n in ast.walk(module) if isinstance(n, ast.Call)
                 and isinstance(n.func, ast.Name) and n.func.id == "build_training_arguments")
-    assert not ({kw.arg for kw in call.keywords} - set(inspect.signature(SFTConfig).parameters))
+    # **training_schedule(...) is an expansion, not an option named None.
+    # Its evaluated schedule is checked by test_production_training_schedule_validates.
+    assert not ({kw.arg for kw in call.keywords if kw.arg is not None}
+                - set(inspect.signature(SFTConfig).parameters))

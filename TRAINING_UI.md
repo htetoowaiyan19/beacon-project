@@ -19,8 +19,9 @@ and 749 held-out test conversations. Review the content before starting a full r
 Settings default to two epochs, batch size 1, accumulation 8, learning rate 0.0001,
 LoRA rank 32 / alpha 64, and sequence length 2048. This is ordinary BF16/FP16 LoRA,
 not quantized training. It uses assistant-only loss and validation early stopping.
-For an initial smoke run, set Max steps to 10 and select the release's smoke files
-as described in [TRAINING_PLAN.md](TRAINING_PLAN.md). The UI does not start training
+For an initial smoke run, set Max steps to 10 and select
+`datasets/releases/it_seminar_v3/smoke/train.jsonl` and `smoke/validation.jsonl`.
+The UI does not start training
 automatically. Close the chat server first to release its GPU model memory.
 
 The panel displays phase, optimizer steps, epoch, elapsed time, estimated remaining
@@ -76,7 +77,6 @@ the total target, not extra epochs to add. Do not edit the dataset midway throug
 a resumable run. Only one trainer should use an output folder at a time. If the UI
 itself crashes, check that its trainer process has exited before resuming.
 Legacy checkpoints without completion markers are not automatically resumed.
-The failed `20261005-183800-fb3a42` run had no checkpoint to recover.
 
 CLI continuation uses the same original arguments and output directory, plus
 `--resume_from_checkpoint latest`. `--save_steps 25` controls saving frequency.
@@ -90,11 +90,30 @@ $env:BEACON_LORA_PATH = 'C:\full\path\to\outputs\training_runs\RUN\adapter'
 .\.venv\Scripts\python.exe scripts/run_server.py --host 127.0.0.1
 ```
 
-Restart the server when changing adapters. Without this setting, it uses the existing
-`outputs/checkpoints` adapter. Check the first chat's server log for the actual
+Restart the server when changing adapters. Without this setting, it uses the frozen
+`models/adapters/beacon-v1.0.0` adapter. Check the first chat's server log for the actual
 adapter path; `/api/health` reports whether a LoRA adapter loaded. English requests
 should receive English replies unless another language is requested. Evaluate
 polite, casual, BFF, IT correctness, and unknown-answer behavior separately.
+
+## Completed seminar run and further training
+
+The current release has already completed two epochs (3,190 optimizer steps).
+Its exported adapter uses checkpoint 3,000, with validation loss 0.373622.
+Starting another run is optional; chatting does not update its weights.
+The shared training persona in `scripts/utils/persona.py` matches the user's
+language and polite, casual or close-friend tone.
+
+Preserve the frozen splits and use validation for parameter selection. Evaluate
+a candidate before changing the serving adapter; never move test records into
+training. The [dataset guide](datasets/README.md) explains review decisions and
+rebuilding a separately versioned experiment. The [release guide](RELEASE_V1.md)
+records the completed held-out comparison and its limitations.
+
+The transfer ZIP includes data and training tools, but excludes optimizer/RNG
+checkpoints. It can start a new training run; continuing an existing run also
+requires copying its original `outputs/training_runs/<run>` folder and checking
+the saved configuration paths. An inference adapter alone cannot resume training.
 
 Implementation references: [Transformers callbacks](https://huggingface.co/docs/transformers/main_classes/callback)
 and [Vercel stream protocol](https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol).

@@ -2,7 +2,7 @@
 
 The active release is **[it_seminar_v3](releases/it_seminar_v3/README.md)**: **14,257 conversations**, split into **12,759 train / 749 validation / 749 test**. Both newly collected files are included. IT knowledge and fluent Burmese remain the objective.
 
-Read [FINAL_DATASET_REVIEW.md](../FINAL_DATASET_REVIEW.md) for the full scan, corrections, exclusions, references and review limits. The [training plan](../TRAINING_PLAN.md) covers smoke training and final evaluation. Training has not been started during this preparation.
+Read [FINAL_DATASET_REVIEW.md](../FINAL_DATASET_REVIEW.md) for the full scan, corrections, exclusions, references and review limits. The two-epoch seminar run has completed; see [RELEASE_V1.md](../RELEASE_V1.md) for results and [TRAINING_UI.md](../TRAINING_UI.md) for optional further training. Keep this experiment's splits frozen.
 
 ## Folder organization
 

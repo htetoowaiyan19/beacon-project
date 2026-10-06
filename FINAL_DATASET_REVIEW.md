@@ -105,7 +105,8 @@ views of their corresponding splits, not extra records to append. Keep all origi
 submissions and prior releases unchanged. The original roughly 7,000-record corpus
 remains archived, and 4,604 recovered legacy records are retained here.
 
-After review, freeze inputs and split hashes. Run the 10-step smoke test, then one
-full two-epoch run using [TRAINING_PLAN.md](TRAINING_PLAN.md). Do not move hold-out
-records into training to increase the count. Full training was not started during
-this preparation.
+The two-epoch seminar run has since completed; see [RELEASE_V1.md](RELEASE_V1.md)
+for its adapter and held-out results. Keep the trained release and its split hashes
+frozen. Further review changes should belong to a new experiment, followed by
+smoke training and validation using [TRAINING_UI.md](TRAINING_UI.md).
+Do not move hold-out records into training to increase the count.
