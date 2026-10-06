@@ -31,6 +31,8 @@ launcher does not expose the application on a public network.
   optional NVIDIA driver utilization, temperature and whole-GPU memory.
 - Total, active, completed, failed and cancelled requests; token count,
   generation speed and duration of the most recent reply.
+- First-text waiting time, input/output tokens and generation queue time.
+  The Adapter card flags trained-model CPU offload if GPU memory was insufficient.
 - Submitted visitor questions and assistant text as it streams, grouped by
   conversation. Partial/cancelled/failed replies remain clearly labeled.
 - Visitor activity: page connected, input focused, typing, new conversation,
@@ -76,3 +78,31 @@ incremental proxy streaming, disconnect cancellation, operator authentication,
 port ownership, backend restart, preview isolation and desktop feed rendering.
 The real Qwen3-4B + frozen LoRA also passed a visitor-proxy/operator-feed smoke
 test. The local report is `outputs/show_day/real-model-smoke.json`.
+
+## Chat waiting time
+
+Inference keeps at most the last three exchanges and a 2,048-token input budget.
+Earlier messages remain visible/exportable in the browser; the model no longer
+reprocesses the entire conversation on every reply. Text streams at valid Unicode
+boundaries instead of waiting for spaces, which matters for continuous Burmese.
+Oversized current messages receive a shortening request instead of silent truncation.
+
+The Last reply card shows first-text time, input/output tokens, speed and queue
+time. Backend logs also record these timings without message content. A CPU-offload
+label means some model layers are on CPU/disk and inference can be much slower.
+
+An offline, warmed-up seven-exchange sample with 64 output tokens measured:
+
+| Configuration | Input tokens | First visible text | Complete request |
+| --- | ---: | ---: | ---: |
+| Full history, original space-based streamer | 2,217 | 4.00 s | 8.24 s |
+| Full history, Unicode streamer | 2,217 | 1.78 s | 8.19 s |
+| Bounded history, Unicode streamer | 1,041 | 0.57 s | 7.01 s |
+
+This is one synthetic conversation, not a latency guarantee or a reconstruction
+of a visitor's session. A separate, substantially larger history stress case
+saturated GPU memory and was interrupted after 192 seconds without a completed
+case result; its assistant messages exceeded normal 512-token replies.
+Local reports are in `outputs/performance/`. Reproduce the ordinary comparison
+with `python scripts/profile_chat_latency.py`; it loads the model offline and
+does not start either server or change weights.

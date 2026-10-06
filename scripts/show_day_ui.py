@@ -210,7 +210,8 @@ class ShowDayUI:
         gpu = snapshot['gpu']; counts = snapshot['counters']; metrics = snapshot['latest_metrics']
         mock = 'mock' in gpu.get('device', '').lower()
         self.stat_labels['Model'].set('PREVIEW · synthetic' if mock else gpu.get('device', 'Unknown'))
-        adapter = ('Preview only' if mock else 'Trained · loaded' if gpu.get('has_lora')
+        adapter = ('Preview only' if mock else 'Trained · CPU offload' if gpu.get('has_lora') and gpu.get('cpu_offload')
+                   else 'Trained · loaded' if gpu.get('has_lora')
                    else 'Base only · adapter missing' if gpu.get('is_loaded')
                    else 'Adapter missing' if gpu.get('adapter_available') is False
                    else 'Loading / waiting' if counts['active'] else 'Not loaded yet')
@@ -218,7 +219,7 @@ class ShowDayUI:
         self.stat_labels['VRAM'].set(f"{gpu.get('vram_allocated_gb',0)} GB allocated\n{gpu.get('vram_reserved_gb',0)} GB reserved")
         self.stat_labels['GPU'].set('Preview · no model' if mock else f"{driver['utilization']:.0f}% busy · {driver['temperature']:.0f}°C\n{driver['used_mb']/1024:.1f}/{driver['total_mb']/1024:.1f} GB" if driver else 'Driver stats unavailable')
         self.stat_labels['Requests'].set(f"{counts['active']} active · {counts['total']} total\n{counts['completed']} done · {counts['failed']} failed\n{counts['cancelled']} cancelled")
-        self.stat_labels['Last reply'].set('Synthetic metrics' if mock else f"{metrics.get('tokens_per_second','—')} tokens/s\n{metrics.get('total_tokens','—')} tokens · {metrics.get('elapsed_seconds','—')}s")
+        self.stat_labels['Last reply'].set('Synthetic metrics' if mock else f"First text: {metrics.get('time_to_first_text_seconds','—')}s\n{metrics.get('prompt_tokens','—')} in / {metrics.get('total_tokens','—')} out\n{metrics.get('tokens_per_second','—')} tok/s · queue {metrics.get('queue_seconds','—')}s")
         online = sum(v['online'] for v in snapshot['visitors'])
         self.visitor_label.set(f'Visitors online: {online}')
         self.chats = {chat['id']: chat for chat in snapshot['chats']}

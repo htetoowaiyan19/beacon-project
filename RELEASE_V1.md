@@ -56,6 +56,11 @@ For the seminar's two-monitor setup, double-click **show_day_ui.bat**.
 The desktop panel controls the model backend and visitor frontend separately,
 and shows logs, model statistics and live conversations. See **SHOW_DAY.md**.
 
+The chat now uses recent context within a 2,048-token input budget and streams
+Burmese without waiting for spaces. Older exchanges remain visible in the page
+but are omitted from the model's context when necessary. The panel shows actual
+first-text waiting time and queue time; no retraining is required for these fixes.
+
 `archives/BEACON-v1.0.0-seminar.zip` contains the application and adapter, plus a
 manifest with per-file checksums. Its adjacent `.sha256` file verifies the ZIP.
 It excludes datasets, training states, logs, virtual environments and base weights.

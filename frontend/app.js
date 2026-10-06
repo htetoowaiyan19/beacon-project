@@ -39,7 +39,7 @@ $('form').onsubmit = async event => {
  controller = new AbortController(); $('send').disabled = true; $('clear').disabled = true; $('stop').hidden = false; $('send').hidden = true;
  $('error').textContent = ''; $('metrics').textContent = ''; $('messages').querySelector('.welcome')?.remove(); $('activity').textContent = 'BEACON is preparing a reply…';
  bubble('user', message); const reply = bubble('assistant', ''); reply.card.classList.add('partial'); $('prompt').value = '';
- let finishReason = '';
+ let finishReason = '', droppedHistory = false;
  try {
   const response = await fetch('/api/chat/stream', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
    body: JSON.stringify({ message, history, use_base_model: $('base').checked, think: $('think').checked, temperature: Number($('temperature').value), max_new_tokens: Number($('tokens').value), system_prompt: $('system').value.trim() || null,
@@ -47,12 +47,12 @@ $('form').onsubmit = async event => {
   if (!response.ok) throw new Error(globalThis.beaconVisitor ? 'BEACON is temporarily unavailable. Please ask a seminar member.' : `Chat failed (${response.status}). Check your settings or the server window.`);
   await readUIMessageStream(response.body, part => {
    if (part.type === 'text-delta') { reply.body.textContent += part.delta; $('activity').textContent = 'BEACON is replying…'; scrollChat(); }
-   if (part.type === 'data-metrics') { const m = part.data; $('metrics').textContent = `${m.total_tokens} tokens · ${m.tokens_per_second} tokens/s · ${m.elapsed_seconds}s`; }
+   if (part.type === 'data-metrics') { const m = part.data; droppedHistory = m.history_messages_dropped > 0; $('metrics').textContent = `${m.total_tokens} tokens · ${m.tokens_per_second} tokens/s · ${m.elapsed_seconds}s${m.time_to_first_text_seconds != null ? ' · First text: ' + m.time_to_first_text_seconds + 's' : ''}${m.prompt_tokens != null ? ' · Input: ' + m.prompt_tokens + ' tokens' : ''}`; }
    if (part.type === 'finish') finishReason = part.finishReason;
   });
   if (!reply.body.textContent.trim()) throw new Error('No answer was produced. Try again with Thinking mode off.');
   history.push({ role: 'user', content: message }, { role: 'assistant', content: reply.body.textContent }); reply.card.classList.remove('partial');
-  $('activity').textContent = finishReason === 'length' ? 'Response limit reached. Ask a follow-up or increase the token limit.' : '';
+  $('activity').textContent = (finishReason === 'length' ? 'Response limit reached. Ask a follow-up or increase the token limit. ' : '') + (droppedHistory ? 'BEACON used recent conversation context to keep this reply fast. Earlier messages remain on screen.' : '');
  } catch (error) {
   $('error').textContent = error.name === 'AbortError' ? 'Reply stopped. The partial response was not added to conversation history.' : error.message;
   if (!reply.body.textContent) reply.body.textContent = 'No completed reply.';

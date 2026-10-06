@@ -31,6 +31,7 @@ def test_base_stream_disables_adapter_and_counts_generated_ids(monkeypatch):
     service = make_service()
     observed = []
     def generate(input_ids, streamer, **kwargs):
+        assert kwargs['use_cache'] is True
         observed.append(service.base_model.model.layers[0].self_attn.q_proj.disable_adapters)
         # A single decoded text chunk can contain multiple generated tokens.
         tokens = service.tokenizer.encode("hello world", add_special_tokens=False)

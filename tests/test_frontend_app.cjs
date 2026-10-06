@@ -31,8 +31,9 @@ function setup(chatFetch) {
   vm.runInContext(fs.readFileSync('frontend/app.js', 'utf8'), context);
   return { elements, context, history: () => JSON.parse(vm.runInContext('JSON.stringify(history)', context)), submissions: () => submissions };
 }
-function streamResponse(complete = true) {
+function streamResponse(complete = true, metrics = null) {
   let text = 'data: {"type":"text-delta","delta":"Hello <script>"}\n\n';
+  if (metrics) text += 'data: ' + JSON.stringify({ type: 'data-metrics', data: metrics }) + '\n\n';
   if (complete) text += 'data: {"type":"finish","finishReason":"stop"}\n\ndata: [DONE]\n\n';
   return { ok: true, body: new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode(text)); c.close(); } }) };
 }
@@ -77,4 +78,17 @@ test('visitor chat carries anonymous grouping IDs and Clear starts a new session
   ui.elements.clear.onclick();
   ui.elements.prompt.value = 'New chat'; await submit(ui);
   assert.equal(request.session_id, 'session-2'); assert.deepEqual(request.history, []);
+});
+
+test('bounded model context leaves the full browser history intact and shows wait timing', async () => {
+  const ui = setup(async options => {
+    const body = JSON.parse(options.body);
+    const metrics = body.history.length === 14 ? { total_tokens: 7, tokens_per_second: 10, elapsed_seconds: .7,
+      time_to_first_text_seconds: .2, prompt_tokens: 1041, history_messages_dropped: 8 } : null;
+    return streamResponse(true, metrics);
+  });
+  for (let i = 0; i < 8; i++) { ui.elements.prompt.value = 'Question ' + i; await submit(ui); }
+  assert.equal(ui.history().length, 16);
+  assert.match(ui.elements.activity.textContent, /recent conversation context/);
+  assert.match(ui.elements.metrics.textContent, /First text: 0.2s/);
 });

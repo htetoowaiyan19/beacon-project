@@ -27,6 +27,7 @@ def main() -> None:
         'scripts/utils/persona.py',
         'scripts/show_day_ui.py', 'scripts/show_day_backend.py', 'scripts/show_day_frontend.py',
         'scripts/smoke_show_day.py',
+        'scripts/profile_chat_latency.py',
         'scripts/utils/show_day_control.py',
     )]
     files += [p for p in (ROOT / 'backend').rglob('*.py') if '__pycache__' not in p.parts]

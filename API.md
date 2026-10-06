@@ -43,6 +43,15 @@ Send `Content-Type: application/json`.
 
 The server is stateless for chat history; include prior exchanges on every request. The runtime persona follows the user's language and adapts tone, with additional instructions for concise answers, uncertainty and avoiding invented personal experiences. First chat lazily loads the model and adapter. Generation is serialized within the process. If the configured adapter is missing, a trained-model request emits a stream error instead of silently answering as the base model. Explicit `use_base_model: true` requests remain available. Set `BEACON_LORA_PATH` before startup with `scripts/run_server.py` to select another evaluated adapter; the release launcher always selects the frozen v1 snapshot.
 
+For responsive chat, inference uses at most the **latest three historical exchanges**
+and a **2,048-token input budget**, measured using the actual tokenizer and chat
+template. Older question/answer groups are dropped together until the input fits.
+The current message and system instructions are preserved verbatim; if those alone
+exceed the budget, the stream reports an actionable error asking for shorter input.
+The model's native context window also reserves room for the requested output.
+Earlier messages remain in the browser's chat display/export but are no longer all
+included in the model's working context. Output still defaults to 512 tokens.
+
 ```powershell
 $body = @{ message = 'Explain TCP and UDP'; history = @(); max_new_tokens = 256 } | ConvertTo-Json
 Invoke-WebRequest -Uri http://localhost:8000/api/chat/stream -Method Post -ContentType application/json -Body $body
@@ -77,6 +86,14 @@ data: [DONE]
 ```
 
 IDs and metrics above are illustrative. There can be many deltas; preserve order and join them. Metrics count actual generated token IDs, not text chunks. `finishReason` is `stop` or `length`; an exhausted output limit is not a transport error. Decode UTF-8 incrementally and buffer incomplete SSE frames. Do not record a reply as complete until both the finish event and `[DONE]` arrive.
+
+Real-model metrics additionally include `queue_seconds`, `time_to_first_text_seconds`,
+`request_elapsed_seconds`, `history_turns_used`, `history_messages_dropped`, and
+`prompt_token_budget`. First-text time includes queueing, any loading, prompt
+preparation and generation up to the first visible delta. Generation-only
+`elapsed_seconds` remains separate. UTF-8 text streams without waiting for word
+spaces, so continuous Burmese text is shown incrementally. Health adds
+`execution_devices` and `cpu_offload` to expose CPU/disk model placement.
 
 Invalid JSON or field validation returns HTTP 422 before streaming. Generation errors after the stream starts retain HTTP 200 and emit a text-end event if necessary, an `error` event with `errorText`, then `finish` with `finishReason: "error"`, and `[DONE]`. Inspect the server log for details. A disconnected client cancels generation; its partial response should not become a completed history exchange.
 

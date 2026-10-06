@@ -11,7 +11,9 @@ from typing import Any, AsyncGenerator, Generator, Optional
 
 import torch
 from peft import PeftModel
-from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer, StoppingCriteria, StoppingCriteriaList
+from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteria, StoppingCriteriaList
+from backend.services.chat_context import prepare_chat
+from backend.services.text_streamer import UnicodeTextIteratorStreamer
 
 from backend.config import (
     DEFAULT_LORA_PATH,
@@ -20,6 +22,8 @@ from backend.config import (
     DEFAULT_SYSTEM_PROMPT,
     DEFAULT_TEMPERATURE,
     DEFAULT_TOP_P,
+    DEFAULT_MAX_PROMPT_TOKENS,
+    DEFAULT_MAX_HISTORY_TURNS,
 )
 
 logger = logging.getLogger("beacon.model_service")
@@ -89,6 +93,9 @@ class ModelService:
             device_map=device_map,
         )
         self.base_model.eval()
+        placement = getattr(self.base_model, 'hf_device_map', {})
+        if torch.cuda.is_available() and any(str(device) in {'cpu', 'disk'} for device in placement.values()):
+            logger.warning('Model layers are offloaded to CPU/disk. Free GPU memory and restart for faster chat.')
 
         if (self.lora_checkpoint_path / "adapter_config.json").exists():
             logger.info(f"Loading LoRA adapter from: {self.lora_checkpoint_path}...")
@@ -113,8 +120,12 @@ class ModelService:
         self, *args, **kwargs,
     ) -> Generator[str, None, dict[str, Any]]:
         # PEFT attaches adapters to the base in place. Serialize switching and generation.
+        queued_at = time.perf_counter()
         with self._generation_lock:
-            return (yield from self._stream_chat(*args, **kwargs))
+            queue_seconds = time.perf_counter() - queued_at
+            metrics = yield from self._stream_chat(*args, **kwargs)
+            metrics['queue_seconds'] = round(queue_seconds, 3)
+            return metrics
 
     def _stream_chat(
         self,
@@ -150,35 +161,20 @@ class ModelService:
                 "unless the user explicitly requests another language."
             )
 
-        # Build message history
-        conversation: list[dict[str, str]] = []
-        if sys_prompt:
-            conversation.append({"role": "system", "content": sys_prompt})
-
-        for msg in messages:
-            role = msg.get("role", "user")
-            content = msg.get("content", "")
-            # If this is the last user message and think is False, prepend /no_think
-            conversation.append({"role": role, "content": content})
-
-        # Format chat template
-        chat_text = self.tokenizer.apply_chat_template(
-            conversation,
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=think,
+        context_limit = getattr(active_model.config, "max_position_embeddings", None)
+        encoded, _, context_metrics = prepare_chat(
+            self.tokenizer, messages, sys_prompt, think=think,
+            max_prompt_tokens=DEFAULT_MAX_PROMPT_TOKENS,
+            max_history_turns=DEFAULT_MAX_HISTORY_TURNS,
+            context_limit=context_limit, max_new_tokens=max_new_tokens,
         )
 
         # Get actual model device safely
         model_device = next(active_model.parameters()).device
-        encoded = self.tokenizer(chat_text, return_tensors="pt")
         inputs = {k: v.to(model_device) for k, v in encoded.items()}
         prompt_tokens = inputs["input_ids"].shape[1]
-        context_limit = getattr(active_model.config, "max_position_embeddings", None)
-        if context_limit and prompt_tokens + max_new_tokens > context_limit:
-            raise ValueError("Conversation exceeds the model context window. Start a new chat.")
 
-        streamer = TextIteratorStreamer(
+        streamer = UnicodeTextIteratorStreamer(
             self.tokenizer,
             skip_prompt=True,
             skip_special_tokens=True,
@@ -200,6 +196,7 @@ class ModelService:
             "top_p": top_p if temperature > 0 else None,
             "repetition_penalty": 1.15,
             "pad_token_id": pad_token_id,
+            "use_cache": True,
             "stopping_criteria": StoppingCriteriaList([CancelGeneration(cancelled)]),
         }
 
@@ -236,6 +233,7 @@ class ModelService:
         tps = token_count / elapsed if elapsed > 0 else 0
 
         return {
+            **context_metrics,
             "total_tokens": token_count,
             "elapsed_seconds": round(elapsed, 3),
             "tokens_per_second": round(tps, 1),
@@ -251,6 +249,8 @@ class ModelService:
             "adapter_available": all((self.lora_checkpoint_path / name).is_file()
                                      for name in ("adapter_model.safetensors", "adapter_config.json")),
             "adapter_name": self.lora_checkpoint_path.name,
+            "execution_devices": sorted({str(device) for device in getattr(self.base_model, 'hf_device_map', {}).values()}),
+            "cpu_offload": any(str(device) in {'cpu', 'disk'} for device in getattr(self.base_model, 'hf_device_map', {}).values()),
         }
         if not torch.cuda.is_available():
             return dict(status, device="CPU", vram_allocated_gb=0.0, vram_reserved_gb=0.0)
