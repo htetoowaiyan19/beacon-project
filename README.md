@@ -6,6 +6,10 @@ Model-only Qwen3-4B chat with Burmese LoRA training and IT conversations. The as
 
 ## Train using the Python UI
 
+**Show day:** double-click `show_day_ui.bat` for separate server controls, logs,
+model stats and live visitor conversations. Put the panel on the members' monitor
+and open the visitor browser on the front monitor. See [SHOW_DAY.md](SHOW_DAY.md).
+
 **Frontend members:** start with [the frontend team guide](frontend/README.md).
 Its streaming preview needs no GPU, weights or datasets and can run while training
 is active. The API contract is in [API.md](API.md).

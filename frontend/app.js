@@ -22,7 +22,7 @@ async function health() {
   $('health').textContent = `${gpu.device}\n${gpu.is_loaded ? 'VRAM: ' + gpu.vram_allocated_gb + ' GB' : 'The first reply takes a little longer while the model loads.'}`;
  } catch { $('status-label').textContent = 'Server offline'; $('status-dot').className = 'status-dot offline'; $('health').textContent = 'Start run_trained_chat.bat and refresh this page.'; }
 }
-$('clear').onclick = () => { if (controller) return; history = []; $('messages').innerHTML = welcome; $('metrics').textContent = ''; $('error').textContent = ''; $('activity').textContent = ''; $('prompt').value = ''; $('prompt').focus(); };
+$('clear').onclick = () => { if (controller) return; history = []; globalThis.beaconVisitor?.newChat(); $('messages').innerHTML = welcome; $('metrics').textContent = ''; $('error').textContent = ''; $('activity').textContent = ''; $('prompt').value = ''; $('prompt').focus(); };
 $('export').onclick = () => {
  if (!history.length) { $('activity').textContent = 'Complete a conversation first, then save it.'; return; }
  const text = 'BEACON v1.0.0\n\n' + history.map(m => `${m.role === 'user' ? 'YOU' : 'BEACON'}\n${m.content}`).join('\n\n');
@@ -42,8 +42,9 @@ $('form').onsubmit = async event => {
  let finishReason = '';
  try {
   const response = await fetch('/api/chat/stream', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
-   body: JSON.stringify({ message, history, use_base_model: $('base').checked, think: $('think').checked, temperature: Number($('temperature').value), max_new_tokens: Number($('tokens').value), system_prompt: $('system').value.trim() || null }) });
-  if (!response.ok) throw new Error(`Chat failed (${response.status}). Check your settings or the server window.`);
+   body: JSON.stringify({ message, history, use_base_model: $('base').checked, think: $('think').checked, temperature: Number($('temperature').value), max_new_tokens: Number($('tokens').value), system_prompt: $('system').value.trim() || null,
+    client_id: globalThis.beaconVisitor?.clientId, session_id: globalThis.beaconVisitor?.sessionId }) });
+  if (!response.ok) throw new Error(globalThis.beaconVisitor ? 'BEACON is temporarily unavailable. Please ask a seminar member.' : `Chat failed (${response.status}). Check your settings or the server window.`);
   await readUIMessageStream(response.body, part => {
    if (part.type === 'text-delta') { reply.body.textContent += part.delta; $('activity').textContent = 'BEACON is replying…'; scrollChat(); }
    if (part.type === 'data-metrics') { const m = part.data; $('metrics').textContent = `${m.total_tokens} tokens · ${m.tokens_per_second} tokens/s · ${m.elapsed_seconds}s`; }

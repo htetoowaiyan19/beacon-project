@@ -67,3 +67,14 @@ test('Enter respects Burmese IME composition and Shift+Enter', () => {
   assert.equal(ui.submissions(), 0); assert.equal(prevented, 0);
   key(event); assert.equal(ui.submissions(), 1); assert.equal(prevented, 1);
 });
+
+test('visitor chat carries anonymous grouping IDs and Clear starts a new session', async () => {
+  let request;
+  const ui = setup(async options => { request = JSON.parse(options.body); return streamResponse(); });
+  vm.runInContext("globalThis.beaconVisitor = { clientId: 'visitor-1', sessionId: 'session-1', newChat() { this.sessionId = 'session-2'; } }", ui.context);
+  ui.elements.prompt.value = 'Hello'; await submit(ui);
+  assert.equal(request.client_id, 'visitor-1'); assert.equal(request.session_id, 'session-1');
+  ui.elements.clear.onclick();
+  ui.elements.prompt.value = 'New chat'; await submit(ui);
+  assert.equal(request.session_id, 'session-2'); assert.deepEqual(request.history, []);
+});

@@ -39,6 +39,7 @@ Send `Content-Type: application/json`.
 | `top_p` | `0.8` | 0-1 |
 | `max_new_tokens` | `512` | Integer, 16-2,048 |
 | `system_prompt` | `null` | Optional persona override; otherwise the shared companion prompt |
+| `client_id`, `session_id` | `null` | Optional anonymous visitor/conversation IDs, 1–64 letters, digits, underscores or hyphens |
 
 The server is stateless for chat history; include prior exchanges on every request. The runtime persona follows the user's language and adapts tone, with additional instructions for concise answers, uncertainty and avoiding invented personal experiences. First chat lazily loads the model and adapter. Generation is serialized within the process. If the configured adapter is missing, a trained-model request emits a stream error instead of silently answering as the base model. Explicit `use_base_model: true` requests remain available. Set `BEACON_LORA_PATH` before startup with `scripts/run_server.py` to select another evaluated adapter; the release launcher always selects the frozen v1 snapshot.
 
@@ -80,3 +81,22 @@ IDs and metrics above are illustrative. There can be many deltas; preserve order
 Invalid JSON or field validation returns HTTP 422 before streaming. Generation errors after the stream starts retain HTTP 200 and emit a text-end event if necessary, an `error` event with `errorText`, then `finish` with `finishReason: "error"`, and `[DONE]`. Inspect the server log for details. A disconnected client cancels generation; its partial response should not become a completed history exchange.
 
 Training controls are local desktop controls, not HTTP endpoints; see [TRAINING_UI.md](TRAINING_UI.md).
+
+## Show-day monitoring
+
+The desktop launcher enables monitoring for its backend only. Normal launches
+keep it disabled. Config includes `show_day: true/false`.
+
+`POST /api/visitor/event` accepts `{event, client_id, session_id}`. Event is one of
+`connected`, `heartbeat`, `typing`, `input_focused`, `new_chat`, `stop`, `copy`, or
+`save`. It receives no draft message text. Submitted chats are observed at the
+backend and retain their normal Vercel stream.
+
+`GET /api/operator/snapshot?after=0` requires `Authorization: Bearer <operator token>`.
+It returns model/release stats, request counters, the latest 40 chat requests with
+streamed answer text, visitor presence and up to 250 recent activity events.
+The `after` cursor filters activity events; chats are a current full snapshot.
+`POST /api/operator/shutdown` requires the same token and works only with the
+show-day backend launcher. Disabled monitoring returns 404; invalid operator
+credentials return 401. The desktop generates the token and keeps it in memory.
+These operator routes are never proxied by the visitor web server. See [SHOW_DAY.md](SHOW_DAY.md).

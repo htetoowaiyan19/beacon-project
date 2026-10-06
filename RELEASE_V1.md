@@ -43,7 +43,7 @@ This release is for the seminar; check important technical answers before using
 them in real work. Test split contents and training data have not been changed
 as part of this release.
 
-Release checks passed: **11 Python tests and 7 JavaScript tests**, eight live HTTP
+Initial v1 release checks passed: **11 Python tests and 7 JavaScript tests**, eight live HTTP
 endpoints, and real English/Burmese trained-adapter streams. The English smoke
 answer followed English after adding the request-specific language instruction.
 Dataset split checksums match the completed training release. Browser visual
@@ -51,6 +51,10 @@ review could not be performed because browser automation was unavailable.
 Local smoke report: `outputs/release_checks/v1-smoke.json`.
 
 ## Share or restore
+
+For the seminar's two-monitor setup, double-click **show_day_ui.bat**.
+The desktop panel controls the model backend and visitor frontend separately,
+and shows logs, model statistics and live conversations. See **SHOW_DAY.md**.
 
 `archives/BEACON-v1.0.0-seminar.zip` contains the application and adapter, plus a
 manifest with per-file checksums. Its adjacent `.sha256` file verifies the ZIP.

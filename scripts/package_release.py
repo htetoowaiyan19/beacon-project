@@ -21,13 +21,16 @@ def sha256(path: Path) -> str:
 def main() -> None:
     verify_release()
     files = [ROOT / name for name in (
-        'beacon-release.json', 'RELEASE_V1.md', 'API.md', 'LICENSE',
-        'requirements-inference.txt', 'run_trained_chat.bat', 'run_server.bat',
+        'beacon-release.json', 'RELEASE_V1.md', 'SHOW_DAY.md', 'API.md', 'LICENSE',
+        'requirements-inference.txt', 'run_trained_chat.bat', 'run_server.bat', 'show_day_ui.bat',
         'scripts/run_release.py', 'scripts/run_server.py', 'scripts/download_model.py', 'scripts/smoke_release.py',
         'scripts/utils/persona.py',
+        'scripts/show_day_ui.py', 'scripts/show_day_backend.py', 'scripts/show_day_frontend.py',
+        'scripts/smoke_show_day.py',
+        'scripts/utils/show_day_control.py',
     )]
     files += [p for p in (ROOT / 'backend').rglob('*.py') if '__pycache__' not in p.parts]
-    files += [ROOT / 'frontend' / name for name in ('index.html', 'app.js', 'stream.js', 'style.css', 'favicon.svg')]
+    files += [ROOT / 'frontend' / name for name in ('index.html', 'app.js', 'stream.js', 'show-day.js', 'style.css', 'favicon.svg')]
     files += [RELEASE_ADAPTER / name for name in (
         'adapter_model.safetensors', 'adapter_config.json', 'tokenizer.json',
         'tokenizer_config.json', 'chat_template.jinja',
