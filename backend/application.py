@@ -8,6 +8,7 @@ from backend.config import FRONTEND_DIR
 from backend.routes.chat import router as chat_router
 from backend.routes.health import router as health_router
 from backend.services.chat_service import ChatService
+from backend.release import public_release
 
 
 def create_app(*, chat_service=None) -> FastAPI:
@@ -23,7 +24,7 @@ def create_app(*, chat_service=None) -> FastAPI:
 
     @app.get("/api/config")
     def capabilities():
-        return {"mode": "model-only", "stream_protocol": "ui-message-stream-v1"}
+        return {"mode": "model-only", "stream_protocol": "ui-message-stream-v1", "release": public_release()}
 
     if FRONTEND_DIR.exists():
         app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")

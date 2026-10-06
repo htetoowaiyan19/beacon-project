@@ -1,6 +1,6 @@
 # BEACON API reference
 
-Version 3.0.0 is model-only. Start with `python scripts/run_server.py --host 127.0.0.1 --port 8000`. Interactive OpenAPI documentation: `/docs`; schema: `/openapi.json`.
+API version 3.0.0 is model-only; the product release is BEACON v1.0.0. Start the verified release with `python scripts/run_release.py` or `run_trained_chat.bat`. Interactive OpenAPI documentation: `/docs`; schema: `/openapi.json`.
 
 ## Endpoints
 
@@ -21,7 +21,9 @@ Retrieval parameters and document routes have been removed. Unavailable document
 
 ## GET /api/health
 
-Returns `status: "online"`, `mode: "model-only"`, and `gpu`. GPU information includes `device`, `vram_allocated_gb`, and `vram_reserved_gb`. On CUDA it also includes `is_loaded` and `has_lora`. CPU responses currently omit those two flags. The endpoint creates the lazy model service but does not load weights or guarantee a chat will succeed. VRAM measures allocations in this server process.
+Both config and health responses include `release` with `name`, `version`, `edition`, `released_on`, `model`, and `limitations`. The minimal config example above omits this additional metadata.
+
+Health returns `status: "online"`, `mode: "model-only"`, and `gpu`. GPU information includes `device`, `vram_allocated_gb`, `vram_reserved_gb`, `is_loaded`, `has_lora`, `adapter_available`, and `adapter_name`, including on CPU. Adapter availability checks for its weights and configuration; the release launcher separately verifies the weights' checksum. The endpoint creates the lazy model service but does not load weights or guarantee a chat will succeed. VRAM measures allocations in this server process. Frontend mock responses are explicitly labeled by their device field.
 
 ## POST /api/chat/stream
 
@@ -38,7 +40,7 @@ Send `Content-Type: application/json`.
 | `max_new_tokens` | `512` | Integer, 16-2,048 |
 | `system_prompt` | `null` | Optional persona override; otherwise the shared companion prompt |
 
-The server is stateless for chat history; include prior exchanges on every request. The shared persona follows the user's language unless they request another and adapts tone. First chat lazily loads the model and adapter. Generation is serialized within the process. If the configured adapter is missing, generation falls back to the base model and logs a warning. Set `BEACON_LORA_PATH` before server startup to select another evaluated adapter.
+The server is stateless for chat history; include prior exchanges on every request. The runtime persona follows the user's language and adapts tone, with additional instructions for concise answers, uncertainty and avoiding invented personal experiences. First chat lazily loads the model and adapter. Generation is serialized within the process. If the configured adapter is missing, a trained-model request emits a stream error instead of silently answering as the base model. Explicit `use_base_model: true` requests remain available. Set `BEACON_LORA_PATH` before startup with `scripts/run_server.py` to select another evaluated adapter; the release launcher always selects the frozen v1 snapshot.
 
 ```powershell
 $body = @{ message = 'Explain TCP and UDP'; history = @(); max_new_tokens = 256 } | ConvertTo-Json

@@ -137,7 +137,18 @@ class ModelService:
             self.load()
 
         active_model = self.get_model(use_base_model=use_base_model)
+        if not use_base_model and self.lora_model is None:
+            raise RuntimeError('The trained adapter is missing. Restore the release adapter or explicitly select the base model.')
         sys_prompt = system_prompt or DEFAULT_SYSTEM_PROMPT
+        # The Burmese-heavy adapter can ignore the general language instruction.
+        # Reinforce it for English input without changing the user's message.
+        latest_user = next((m.get("content", "") for m in reversed(messages)
+                            if m.get("role") == "user"), "")
+        if not system_prompt and latest_user.isascii() and any(c.isalpha() for c in latest_user):
+            sys_prompt += (
+                " The current user message is in English. Write your entire answer in English, "
+                "unless the user explicitly requests another language."
+            )
 
         # Build message history
         conversation: list[dict[str, str]] = []
@@ -234,15 +245,21 @@ class ModelService:
 
     def get_gpu_status(self) -> dict[str, Any]:
         """Return GPU and memory usage statistics."""
+        status = {
+            "is_loaded": self._is_loaded,
+            "has_lora": self.lora_model is not None,
+            "adapter_available": all((self.lora_checkpoint_path / name).is_file()
+                                     for name in ("adapter_model.safetensors", "adapter_config.json")),
+            "adapter_name": self.lora_checkpoint_path.name,
+        }
         if not torch.cuda.is_available():
-            return {"device": "CPU", "vram_allocated_gb": 0.0, "vram_reserved_gb": 0.0}
+            return dict(status, device="CPU", vram_allocated_gb=0.0, vram_reserved_gb=0.0)
 
         device = torch.cuda.current_device()
         bytes_per_gb = 1024**3
         return {
             "device": torch.cuda.get_device_name(device),
+            **status,
             "vram_allocated_gb": round(torch.cuda.memory_allocated(device) / bytes_per_gb, 2),
             "vram_reserved_gb": round(torch.cuda.memory_reserved(device) / bytes_per_gb, 2),
-            "is_loaded": self._is_loaded,
-            "has_lora": self.lora_model is not None,
         }

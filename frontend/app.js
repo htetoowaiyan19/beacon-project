@@ -1,37 +1,61 @@
-const $ = (id) => document.getElementById(id);
+const $ = id => document.getElementById(id);
 let history = [], controller = null;
+const welcome = $('messages').innerHTML;
+function scrollChat() { $('messages').scrollTop = $('messages').scrollHeight; }
 function bubble(role, text) {
-  const element = document.createElement('article'); element.className = role; element.textContent = text;
-  $('messages').appendChild(element); element.scrollIntoView({ block: 'end' }); return element;
+ const card = document.createElement('article'); card.className = 'message ' + role;
+ const meta = document.createElement('div'); meta.className = 'message-meta';
+ const name = document.createElement('span'); name.textContent = role === 'user' ? 'YOU' : $('base').checked ? 'QWEN · BASE MODEL' : 'BEACON'; meta.appendChild(name);
+ const body = document.createElement('div'); body.className = 'message-body'; body.textContent = text;
+ const copy = document.createElement('button'); copy.className = 'copy'; copy.type = 'button'; copy.textContent = 'Copy'; copy.setAttribute('aria-label', 'Copy ' + role + ' message');
+ copy.onclick = async () => { try { await navigator.clipboard.writeText(body.textContent); copy.textContent = 'Copied'; setTimeout(() => copy.textContent = 'Copy', 1500); } catch { $('error').textContent = 'Copy is unavailable. Select the message text to copy it.'; } };
+ meta.appendChild(copy); card.append(meta, body); $('messages').appendChild(card); scrollChat(); return { card, body };
 }
 async function health() {
-  try {
-    const response = await fetch('/api/health'); if (!response.ok) throw new Error('Health check failed');
-    const { gpu } = await response.json();
-    $('health').textContent = `${gpu.device} · ${gpu.is_loaded ? (gpu.has_lora ? 'Trained adapter loaded' : 'Base model loaded') : 'Model loads on first message'}\nVRAM: ${gpu.vram_allocated_gb} GB`;
-  } catch (error) { $('health').textContent = error.message; }
+ try {
+  const response = await fetch('/api/health'); if (!response.ok) throw new Error('Health check failed');
+  const { gpu, release } = await response.json();
+  if (release) $('version').textContent = `${release.edition} · v${release.version}`;
+  const preview = gpu.device.toLowerCase().includes('mock');
+  $('status-label').textContent = preview ? 'Frontend preview' : gpu.is_loaded ? (gpu.has_lora ? 'Trained model ready' : 'Base model loaded') : gpu.adapter_available === false ? 'Adapter missing' : 'Ready to chat';
+  $('status-dot').className = gpu.adapter_available === false && !preview ? 'status-dot offline' : 'status-dot online';
+  $('health').textContent = `${gpu.device}\n${gpu.is_loaded ? 'VRAM: ' + gpu.vram_allocated_gb + ' GB' : 'The first reply takes a little longer while the model loads.'}`;
+ } catch { $('status-label').textContent = 'Server offline'; $('status-dot').className = 'status-dot offline'; $('health').textContent = 'Start run_trained_chat.bat and refresh this page.'; }
 }
-$('clear').onclick = () => { if (controller) return; history = []; $('messages').replaceChildren(); $('metrics').textContent = ''; $('error').textContent = ''; };
+$('clear').onclick = () => { if (controller) return; history = []; $('messages').innerHTML = welcome; $('metrics').textContent = ''; $('error').textContent = ''; $('activity').textContent = ''; $('prompt').value = ''; $('prompt').focus(); };
+$('export').onclick = () => {
+ if (!history.length) { $('activity').textContent = 'Complete a conversation first, then save it.'; return; }
+ const text = 'BEACON v1.0.0\n\n' + history.map(m => `${m.role === 'user' ? 'YOU' : 'BEACON'}\n${m.content}`).join('\n\n');
+ const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+ const link = document.createElement('a'); link.href = url; link.download = 'beacon-chat.txt'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+$('messages').addEventListener('click', event => { const suggestion = event.target.closest('[data-prompt]'); if (suggestion && !controller) { $('prompt').value = suggestion.dataset.prompt; $('prompt').focus(); } });
 $('stop').onclick = () => controller?.abort();
-$('form').onsubmit = async (event) => {
-  event.preventDefault(); if (controller) return;
-  const message = $('prompt').value.trim(); if (!message) return;
-  controller = new AbortController(); $('send').disabled = true; $('clear').disabled = true; $('stop').hidden = false;
-  $('error').textContent = ''; $('metrics').textContent = ''; $('messages').querySelector('.welcome')?.remove();
-  bubble('user', message); const reply = bubble('assistant', ''); $('prompt').value = '';
-  try {
-    const response = await fetch('/api/chat/stream', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
-      body: JSON.stringify({ message, history, use_base_model: $('base').checked, think: $('think').checked,
-        temperature: Number($('temperature').value), max_new_tokens: Number($('tokens').value), system_prompt: $('system').value.trim() || null })
-    });
-    if (!response.ok) throw new Error(`Chat failed (${response.status}): ${await response.text()}`);
-    await readUIMessageStream(response.body, (part) => {
-      if (part.type === 'text-delta') { reply.textContent += part.delta; reply.scrollIntoView({ block: 'end' }); }
-      if (part.type === 'data-metrics') { const m = part.data; $('metrics').textContent = `${m.total_tokens} tokens · ${m.tokens_per_second} tokens/s · ${m.elapsed_seconds}s`; }
-    });
-    history.push({ role: 'user', content: message }, { role: 'assistant', content: reply.textContent });
-  } catch (error) { $('error').textContent = error.name === 'AbortError' ? 'Generation stopped. Partial reply was not added to conversation history.' : error.message;
-  } finally { controller = null; $('send').disabled = false; $('clear').disabled = false; $('stop').hidden = true; health(); $('prompt').focus(); }
+$('prompt').addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing && event.keyCode !== 229) { event.preventDefault(); if (!controller) $('form').requestSubmit(); } });
+$('form').onsubmit = async event => {
+ event.preventDefault(); if (controller) return;
+ const message = $('prompt').value.trim(); if (!message) return;
+ if (!$('temperature').checkValidity() || !$('tokens').checkValidity()) { $('error').textContent = 'Check the temperature (0–2) and response token limit (16–2048) in settings.'; return; }
+ controller = new AbortController(); $('send').disabled = true; $('clear').disabled = true; $('stop').hidden = false; $('send').hidden = true;
+ $('error').textContent = ''; $('metrics').textContent = ''; $('messages').querySelector('.welcome')?.remove(); $('activity').textContent = 'BEACON is preparing a reply…';
+ bubble('user', message); const reply = bubble('assistant', ''); reply.card.classList.add('partial'); $('prompt').value = '';
+ let finishReason = '';
+ try {
+  const response = await fetch('/api/chat/stream', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
+   body: JSON.stringify({ message, history, use_base_model: $('base').checked, think: $('think').checked, temperature: Number($('temperature').value), max_new_tokens: Number($('tokens').value), system_prompt: $('system').value.trim() || null }) });
+  if (!response.ok) throw new Error(`Chat failed (${response.status}). Check your settings or the server window.`);
+  await readUIMessageStream(response.body, part => {
+   if (part.type === 'text-delta') { reply.body.textContent += part.delta; $('activity').textContent = 'BEACON is replying…'; scrollChat(); }
+   if (part.type === 'data-metrics') { const m = part.data; $('metrics').textContent = `${m.total_tokens} tokens · ${m.tokens_per_second} tokens/s · ${m.elapsed_seconds}s`; }
+   if (part.type === 'finish') finishReason = part.finishReason;
+  });
+  if (!reply.body.textContent.trim()) throw new Error('No answer was produced. Try again with Thinking mode off.');
+  history.push({ role: 'user', content: message }, { role: 'assistant', content: reply.body.textContent }); reply.card.classList.remove('partial');
+  $('activity').textContent = finishReason === 'length' ? 'Response limit reached. Ask a follow-up or increase the token limit.' : '';
+ } catch (error) {
+  $('error').textContent = error.name === 'AbortError' ? 'Reply stopped. The partial response was not added to conversation history.' : error.message;
+  if (!reply.body.textContent) reply.body.textContent = 'No completed reply.';
+  $('prompt').value = message; $('activity').textContent = '';
+ } finally { controller = null; $('send').disabled = false; $('clear').disabled = false; $('stop').hidden = true; $('send').hidden = false; health(); $('prompt').focus(); }
 };
 health();

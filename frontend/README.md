@@ -41,7 +41,7 @@ text or sanitize rendered Markdown; never insert raw message HTML.
 
 ```powershell
 .\.venv-frontend\Scripts\python.exe -m pytest tests/test_frontend_handoff.py tests/test_variants_streaming.py -q -p no:cacheprovider
-node --test tests/test_frontend_stream.cjs
+node --test tests/test_frontend_stream.cjs tests/test_frontend_app.cjs
 ```
 
 Node is optional for development and needed only for the JavaScript tests.

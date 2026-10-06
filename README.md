@@ -1,6 +1,8 @@
 # BEACON - Burmese AI companion
 
-Model-only Qwen3-4B chat with LoRA training for fluent Burmese and accurate IT explanations. The assistant follows the user's language and tone: polite, casual, or close-friend.
+**BEACON v1.0.0 (IT Seminar)** is ready for local chat. Double-click `run_trained_chat.bat` and open **http://127.0.0.1:8000/**. See [the release guide](RELEASE_V1.md) for the verified adapter, results and sharing instructions.
+
+Model-only Qwen3-4B chat with Burmese LoRA training and IT conversations. The assistant follows the user's language and tone: polite, casual, or close-friend. Burmese fluency and factual accuracy remain uneven; check important answers.
 
 ## Train using the Python UI
 
@@ -31,7 +33,7 @@ The active IT seminar release has **14,257 conversations**: 12,759 training, 749
 
 Or double-click `run_server.bat`. Open `http://localhost:8000`. API docs are available at `/docs`; see [API.md](API.md). Chat output uses Vercel AI SDK UI Message Stream v1. Inference dependencies are in `requirements-inference.txt`; training dependencies are in `requirements-training.txt`. Create a virtual environment and install the appropriate dependencies on a fresh clone.
 
-Base weights are in `models/qwen3-4b`. The server defaults to the existing adapter in `outputs/checkpoints`. To use an evaluated new adapter, set `BEACON_LORA_PATH` to its full adapter folder before starting the server. Training does not automatically replace the serving adapter. Run training and chat separately on the 16 GB GPU.
+Base weights are in `models/qwen3-4b`. The server defaults to the frozen release adapter in `models/adapters/beacon-v1.0.0`. The release launcher verifies its checksum before starting. To use another evaluated adapter, set `BEACON_LORA_PATH` to its full adapter folder before starting `scripts/run_server.py`. Training does not automatically replace the serving adapter. Run training and chat separately on the 16 GB GPU.
 
 ## Project layout
 
@@ -42,7 +44,7 @@ Base weights are in `models/qwen3-4b`. The server defaults to the existing adapt
 | `datasets/freshes/` | Original team submissions |
 | `datasets/releases/`, `datasets/active.json` | Prepared releases and active selection |
 | `datasets/archive/`, `datasets/reviews/` | Preserved originals and review decisions |
-| `models/` | Base model weights |
+| `models/` | Base weights and frozen v1 adapter |
 | `outputs/checkpoints/` | Existing trained adapter |
 | `outputs/training_runs/` | New UI runs, logs, stats, adapters |
 | `outputs/evaluations/` | Audits and benchmark results |

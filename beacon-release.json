@@ -1,0 +1,12 @@
+{
+  "name": "BEACON",
+  "version": "1.0.0",
+  "edition": "IT Seminar",
+  "released_on": "2026-10-06",
+  "model": "Qwen3-4B + Burmese LoRA",
+  "adapter_directory": "models/adapters/beacon-v1.0.0",
+  "adapter_sha256": "4b85782e5568ca75adfc26a2fbd60cf53b446f0c6735da92785f099df9fcf191",
+  "selected_checkpoint": 3000,
+  "completed_training_steps": 3190,
+  "limitations": "Seminar release. Burmese fluency and factual accuracy are still uneven."
+}
