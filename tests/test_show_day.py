@@ -176,6 +176,29 @@ def test_occupied_port_does_not_take_over_an_unowned_server(tmp_path):
         assert occupied.getsockname()[1] == port
 
 
+def test_forced_server_stop_also_stops_owned_loading_child(tmp_path):
+    import psutil
+    server = ManagedServer('Loading', tmp_path)
+    child = None
+    command = [sys.executable, '-u', '-c',
+               "import subprocess, sys, time; "
+               "p = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)']); "
+               "print(p.pid, flush=True); time.sleep(60)"]
+    try:
+        server.start(command, free_port())
+        pid = wait_until(lambda: int(server.log_path.read_text().strip())
+                         if server.log_path.exists() and server.log_path.read_text().strip().isdigit() else None)
+        child = psutil.Process(pid)
+        assert child.is_running()
+        server.stop()
+        assert not server.running
+        wait_until(lambda: not child.is_running(), timeout=5)
+    finally:
+        server.stop()
+        if child is not None and child.is_running():
+            child.kill()
+
+
 def test_desktop_renders_feed_and_closes_without_model_imports():
     import tkinter as tk
     from scripts.show_day_ui import ShowDayUI

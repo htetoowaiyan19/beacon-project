@@ -29,6 +29,11 @@ in macOS/Linux Terminal; commands labeled `powershell` run in Windows PowerShell
 
 ## Choose a setup option
 
+For the **Windows RTX 4050 laptop with 6 GB VRAM and 16 GB RAM**, use the
+separate trained Q4 CUDA build and follow [WINDOWS_GPU.md](WINDOWS_GPU.md).
+Its Windows launchers and bundled native DLLs replace the original-model
+installation path for that deployment. No training is required.
+
 | Option | Use it for | Model runtime | Files to obtain |
 | --- | --- | --- | --- |
 | A: M2 Air | The 8 GB seminar laptop | Trained Q4_K_M GGUF through llama.cpp Metal | `BEACON-v1.0.0-m2-air.zip` and its checksum |
@@ -101,7 +106,7 @@ Setup does not install Python, update macOS, or install a compiler.
 
 ### A2. Copy, verify and extract the laptop package
 
-Copy these two files from the original project's `archives/` folder:
+Copy these two files from the original project's `builds/` folder:
 
 ```text
 BEACON-v1.0.0-m2-air.zip
@@ -697,7 +702,7 @@ From the original project machine, rebuild after source or documentation changes
 The first command requires the existing trained GGUF and native runtime; it
 packages them without retraining or conversion. The second requires the original
 base/adapter and complete datasets. Both write ZIPs and checksum sidecars in
-`archives/` and verify every archived entry. These packagers are part of the full
+`builds/` and verify every archived entry. These packagers are part of the full
 source checkout, not the minimal M2 distribution.
 
 If editing source on the Mac, do not expect an old ZIP manifest to match it.

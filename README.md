@@ -5,6 +5,9 @@ It follows the user's language and polite, casual or close-friend tone. The acti
 application is model-only. Burmese fluency and factual accuracy remain uneven;
 see the measured results in [RELEASE_V1.md](RELEASE_V1.md).
 
+For a folder map, measured disk usage, review order and backup/cleanup decisions,
+read [PROJECT_REVIEW_GUIDE.md](PROJECT_REVIEW_GUIDE.md).
+
 ## Run the project
 
 For detailed installation options, verification, start/stop commands and
@@ -22,12 +25,17 @@ The API documentation is at `/docs` and in [API.md](API.md).
 
 ## Move to another device
 
+**Windows laptop with RTX 4050 / 6 GB VRAM:** use the trained Q4 GGUF/CUDA
+edition in `builds/BEACON-v1.0.0-windows-cuda.zip`. Follow the step-by-step
+[WINDOWS_GPU.md](WINDOWS_GPU.md). It includes the latest frontend and native
+CUDA/CPU runtimes without the original training stack.
+
 **M2 MacBook Air with 8 GB RAM:** use the smaller
-`archives/BEACON-v1.0.0-m2-air.zip` with trained Q4_K_M GGUF and Metal inference.
+`builds/BEACON-v1.0.0-m2-air.zip` with trained Q4_K_M GGUF and Metal inference.
 See [M2_AIR.md](M2_AIR.md). It retains the visitor page and members' panel and needs
 no PyTorch for inference. The full package below preserves training data and weights.
 
-Use `archives/BEACON-v1.0.0-portable.zip`, which includes source, the complete base
+Use `builds/BEACON-v1.0.0-portable.zip`, which includes source, the complete base
 model, trained adapter, datasets and review provenance. Follow
 [TRANSFER.md](TRANSFER.md) to verify it and install dependencies in a fresh
 environment. Python packages and GPU drivers require installation; the ZIP does
@@ -80,7 +88,8 @@ adapter. Select another evaluated adapter explicitly with `BEACON_LORA_PATH` and
 | `models/qwen3-4b/`, `models/adapters/beacon-v1.0.0/` | Base weights and serving adapter |
 | `models/gguf/`, `runtime/` | Quantized laptop exports and bundled native runtime |
 | `outputs/` | Local training checkpoints, logs and evaluation results |
-| `archives/` | Transfer packages and preserved history |
+| `builds/` | Model and transfer ZIPs with checksum sidecars |
+| `archives/` | Preserved RAG and project/data history |
 
 The removed retrieval project remains in
 `archives/rag_5th_year_2026-10-04.zip` for the fifth-year project. Superseded guides,

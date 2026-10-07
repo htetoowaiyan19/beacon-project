@@ -72,11 +72,31 @@ class ManagedServer:
             process = self.process
             if process is None or process.poll() is not None:
                 return
+            import psutil
+            try:
+                children = psutil.Process(process.pid).children(recursive=True)
+            except psutil.NoSuchProcess:
+                children = []
             process.terminate()
             try:
                 process.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 process.kill(); process.wait(timeout=5)
+            finally:
+                # Windows terminate() bypasses Python cleanup. Capture owned children
+                # before terminating the parent, including a model still loading.
+                for child in children:
+                    try:
+                        child.terminate()
+                    except psutil.NoSuchProcess:
+                        pass
+                _, remaining = psutil.wait_procs(children, timeout=3)
+                for child in remaining:
+                    try:
+                        child.kill()
+                    except psutil.NoSuchProcess:
+                        pass
+                psutil.wait_procs(remaining, timeout=3)
 
 
 class ShowDayControl:

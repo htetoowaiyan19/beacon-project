@@ -98,6 +98,8 @@ hf_cache/
 !/datasets/active.json
 /outputs/
 /archives/
+/builds/*
+!/builds/README.md
 *.zip
 *.parquet
 *.arrow

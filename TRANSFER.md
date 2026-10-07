@@ -1,6 +1,6 @@
 # Run BEACON on another device
 
-`archives/BEACON-v1.0.0-portable.zip` contains the cleaned source, Qwen3-4B base
+`builds/BEACON-v1.0.0-portable.zip` contains the cleaned source, Qwen3-4B base
 weights, frozen trained LoRA adapter, tokenizers, frontend, show-day panel,
 training/evaluation tools and preserved datasets/review decisions. No separate
 model download is needed. It excludes the original `.venv`, Git metadata, secrets,

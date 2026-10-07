@@ -56,7 +56,7 @@ def package_files(root: Path = ROOT) -> dict[str, Path]:
 def main() -> None:
     verify_release()
     entries = package_files()
-    output = ROOT / 'archives' / f"BEACON-v{RELEASE['version']}-portable.zip"
+    output = ROOT / 'builds' / f"BEACON-v{RELEASE['version']}-portable.zip"
     output.parent.mkdir(exist_ok=True)
     size = sum(p.stat().st_size for p in entries.values())
     if shutil.disk_usage(output.parent).free < size + 1024**3:

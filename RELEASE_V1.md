@@ -66,7 +66,7 @@ Burmese without waiting for spaces. Older exchanges remain visible in the page
 but are omitted from the model's context when necessary. The panel shows actual
 first-text waiting time and queue time; no retraining is required for these fixes.
 
-`archives/BEACON-v1.0.0-portable.zip` contains the application, complete base model,
+`builds/BEACON-v1.0.0-portable.zip` contains the application, complete base model,
 trained adapter, datasets and review provenance. It supersedes the older
 adapter-only seminar ZIP. Its `MANIFEST.json` records every file's SHA-256 and the
 adjacent `.zip.sha256` verifies the ZIP itself. It excludes training optimizer

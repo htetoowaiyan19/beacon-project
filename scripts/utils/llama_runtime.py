@@ -65,11 +65,17 @@ class LlamaRuntime:
         available_port(self.port)
         model, self.metadata = verify_model(self.root)
         configured = os.getenv('BEACON_LLAMA_SERVER_PATH')
-        binaries = list((self.root / 'runtime/llama').rglob('llama-server'))
+        windows_bundle = sys.platform == 'win32' and (self.root / 'runtime/windows-provenance.json').is_file()
+        gpu_layers = os.getenv('BEACON_GGUF_GPU_LAYERS', 'all')
+        self.metal = sys.platform == 'darwin' and gpu_layers != '0'
+        self.cuda = windows_bundle and gpu_layers != '0'
+        directory = 'runtime/llama-cuda' if self.cuda else 'runtime/llama-cpu' if windows_bundle else 'runtime/llama'
+        executable_name = 'llama-server.exe' if windows_bundle else 'llama-server'
+        binaries = list((self.root / directory).rglob(executable_name))
         executable = Path(configured) if configured else binaries[0] if len(binaries) == 1 else None
         if executable is None or not executable.is_file():
-            raise ValueError('llama-server is missing. Run setup_laptop.command first.')
-        self.metal = sys.platform == 'darwin' and os.getenv('BEACON_GGUF_GPU_LAYERS', 'all') != '0'
+            setup = 'setup_windows_gpu.bat' if windows_bundle else 'setup_laptop.command'
+            raise ValueError(f'llama-server is missing. Run {setup} first.')
         command = [str(executable.resolve()), '--model', str(model), '--host', '127.0.0.1',
                    '--port', str(self.port), '--ctx-size', '2048', '--parallel', '1',
                    '--batch-size', '128', '--ubatch-size', '128', '--threads', '4',
@@ -79,6 +85,9 @@ class LlamaRuntime:
         if self.metal:
             # The pinned Apple runtime names its first Metal device MTL0.
             command += ['--device', 'MTL0']
+        elif self.cuda:
+            command += ['--device', 'CUDA0']
+        self.cpu_offload = (self.cuda or self.metal) and gpu_layers != 'all'
         self.process = subprocess.Popen(command, cwd=self.root, stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace',
                                         creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)

@@ -1,4 +1,4 @@
-"""Create the small M2 Air package, excluding BF16 weights and training data."""
+"""Create a trained GGUF package for Apple Silicon or Windows CUDA."""
 import hashlib
 import argparse
 import json
@@ -22,24 +22,40 @@ def digest(path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--q5', action='store_true', help='Package the optional five-bit diagnostic export')
+    parser.add_argument('--windows', action='store_true', help='Build Windows x64 CUDA edition with CPU fallback')
     args = parser.parse_args()
+    if args.windows and args.q5:
+        parser.error('The Windows seminar build uses the verified Q4 export.')
     metadata_name = 'export-Q5_K_M.json' if args.q5 else 'export.json'
     model, metadata = verify_model(metadata_name=metadata_name)
-    runtime = ROOT / 'runtime/macos-arm64.tar.gz'
-    provenance = json.loads((ROOT / 'runtime/provenance.json').read_text(encoding='utf-8'))
-    if digest(runtime) != provenance['sha256']:
-        raise ValueError('Bundled runtime checksum mismatch')
+    provenance_name = 'windows-provenance.json' if args.windows else 'provenance.json'
+    provenance = json.loads((ROOT / 'runtime' / provenance_name).read_text(encoding='utf-8'))
+    if args.windows:
+        native_files = {item['file'] for item in provenance['files']}
+        if native_files != {'windows-cuda.zip', 'windows-cudart.zip', 'windows-cpu.zip'}:
+            raise ValueError('Invalid Windows runtime provenance')
+        for item in provenance['files']:
+            native = ROOT / 'runtime' / item['file']
+            if native.stat().st_size != item['bytes'] or digest(native) != item['sha256']:
+                raise ValueError('Bundled Windows runtime checksum mismatch')
+    else:
+        native_files = {'macos-arm64.tar.gz'}
+        if digest(ROOT / 'runtime/macos-arm64.tar.gz') != provenance['sha256']:
+            raise ValueError('Bundled runtime checksum mismatch')
     names = ['beacon-release.json', 'LICENSE', 'requirements-laptop.txt',
-             'setup_laptop.command', 'start_laptop.command', 'chat_laptop.command',
-             'M2_AIR.md', 'SETUP.md', 'SHOW_DAY.md', 'API.md', 'scripts/setup_laptop.py',
+             'M2_AIR.md', 'WINDOWS_GPU.md', 'SETUP.md', 'SHOW_DAY.md', 'API.md',
              'scripts/run_laptop.py', 'scripts/smoke_laptop.py', 'scripts/verify_package.py',
              'scripts/show_day_ui.py', 'scripts/show_day_backend.py', 'scripts/show_day_frontend.py',
              'scripts/utils/show_day_control.py', 'scripts/utils/llama_runtime.py',
-             'scripts/utils/persona.py', 'models/gguf/export.json',
-             'runtime/macos-arm64.tar.gz', 'runtime/provenance.json']
+             'scripts/utils/persona.py', 'models/gguf/export.json']
+    names += ['runtime/' + name for name in sorted(native_files | {provenance_name})]
+    names += (['setup_windows_gpu.bat', 'start_windows_gpu.bat', 'chat_windows_gpu.bat',
+               'scripts/setup_windows_gpu.py', 'scripts/smoke_windows_gpu.py',
+               'runtime/LLAMA_CPP_LICENSE.txt', 'runtime/THIRD_PARTY_NOTICES.txt'] if args.windows else
+              ['setup_laptop.command', 'start_laptop.command', 'chat_laptop.command', 'scripts/setup_laptop.py'])
     entries = {name: ROOT / name for name in names}
     entries['models/gguf/export.json'] = ROOT / 'models/gguf' / metadata_name
-    entries['README.md'] = ROOT / 'M2_AIR.md'
+    entries['README.md'] = ROOT / ('WINDOWS_GPU.md' if args.windows else 'M2_AIR.md')
     entries[model.relative_to(ROOT).as_posix()] = model
     for path in (ROOT / 'backend').rglob('*.py'):
         if '__pycache__' not in path.parts:
@@ -59,12 +75,20 @@ def main():
         evidence = ROOT / 'outputs/laptop_export' / source
         if evidence.exists():
             entries['checks/' + target] = evidence
-    manifest = {'format_version': 1, 'release': RELEASE, 'edition': 'M2 Air 8 GB / Metal',
+    if args.windows:
+        for name in ('smoke.json', 'smoke-cpu.json', 'http-check.json'):
+            evidence = ROOT / 'outputs/windows_gpu_checks' / name
+            if evidence.exists():
+                entries['checks/windows-' + name] = evidence
+    manifest = {'format_version': 1, 'release': RELEASE,
+                'edition': 'Windows x64 / CUDA / Q4' if args.windows else 'M2 Air 8 GB / Metal',
                 'base_weights_included': False, 'merged_trained_gguf_included': True,
                 'datasets_included': False, 'optimizer_checkpoints_included': False,
                 'model': metadata, 'runtime': provenance,
                 'files': {n: {'bytes': p.stat().st_size, 'sha256': digest(p)} for n, p in sorted(entries.items())}}
-    output = ROOT / ('archives/BEACON-v1.0.0-m2-air-q5.zip' if args.q5 else 'archives/BEACON-v1.0.0-m2-air.zip')
+    output = ROOT / ('builds/BEACON-v1.0.0-windows-cuda.zip' if args.windows else
+                     'builds/BEACON-v1.0.0-m2-air-q5.zip' if args.q5 else 'builds/BEACON-v1.0.0-m2-air.zip')
+    output.parent.mkdir(exist_ok=True)
     temporary = output.with_suffix('.zip.tmp')
     if shutil.disk_usage(output.parent).free < sum(i['bytes'] for i in manifest['files'].values()) + 1024**3:
         raise OSError('Insufficient space for laptop package')
@@ -77,7 +101,7 @@ def main():
                     info.external_attr = (0o100755 << 16)
                     archive.writestr(info, path.read_bytes(), compress_type=ZIP_DEFLATED)
                 else:
-                    archive.write(path, name, compress_type=ZIP_STORED if path.suffix in {'.gguf', '.gz'} else ZIP_DEFLATED)
+                    archive.write(path, name, compress_type=ZIP_STORED if path.suffix in {'.gguf', '.gz', '.zip'} else ZIP_DEFLATED)
             archive.writestr('MANIFEST.json', json.dumps(manifest, indent=2) + '\n', compress_type=ZIP_DEFLATED)
         count = verify_zip(temporary, expected_manifest=manifest)
         for name, path in entries.items():

@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT))
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--check-runtime', action='store_true', help='Load the native model once, report status, then stop it')
     parser.add_argument('--chat', action='store_true', help='Run a single chat server instead of the control panel')
     parser.add_argument('--cpu', action='store_true')
     args = parser.parse_args()
@@ -21,6 +22,16 @@ def main():
     path, metadata = verify_model()
     print(f"Verified trained laptop model: {metadata['quantization']} / {path.name}", flush=True)
     if args.check:
+        return
+    if args.check_runtime:
+        from backend.services.gguf_model_service import GGUFModelService
+        import json
+        service = GGUFModelService()
+        try:
+            service.load()
+            print(json.dumps(service.get_gpu_status(), indent=2), flush=True)
+        finally:
+            service.close()
         return
     if args.chat:
         import uvicorn

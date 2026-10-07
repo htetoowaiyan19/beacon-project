@@ -35,12 +35,15 @@ class GGUFModelService:
             except Exception:
                 # Optional telemetry must survive a process exiting during a read.
                 pass
-        return {'device': 'Apple GPU (Metal)' if getattr(self.runtime, 'metal', False) else 'llama.cpp CPU',
+        metal = getattr(self.runtime, 'metal', False)
+        cuda = getattr(self.runtime, 'cuda', False)
+        return {'device': 'Apple GPU (Metal)' if metal else 'NVIDIA GPU (CUDA)' if cuda else 'llama.cpp CPU',
                 'runtime': 'llama.cpp', 'is_loaded': loaded, 'has_lora': loaded,
                 'adapter_merged': True, 'adapter_available': True,
-                'adapter_name': 'beacon-v1.0.0 merged / ' + getattr(self.runtime, 'metadata', {}).get('quantization', 'Q4_K_M'), 'cpu_offload': False,
-                'execution_devices': ['Metal' if getattr(self.runtime, 'metal', False) else 'CPU'],
-                'shared_memory': True, 'runtime_buffers_gb': memory,
+                'adapter_name': 'beacon-v1.0.0 merged / ' + getattr(self.runtime, 'metadata', {}).get('quantization', 'Q4_K_M'),
+                'cpu_offload': getattr(self.runtime, 'cpu_offload', False),
+                'execution_devices': ['CUDA0' if cuda else 'Metal' if metal else 'CPU'],
+                'shared_memory': not cuda, 'runtime_buffers_gb': memory,
                 'native_process_ram_gb': resident, 'system_available_ram_gb': available,
                 'vram_allocated_gb': None, 'vram_reserved_gb': None,
                 'max_new_tokens': self.max_output, 'max_prompt_tokens': self.max_prompt}

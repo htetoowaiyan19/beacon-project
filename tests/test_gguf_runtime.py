@@ -143,3 +143,48 @@ def test_m2_runtime_uses_metal_one_slot_small_cache_and_stops_its_child(monkeypa
     assert command[command.index('--api-key') + 1] == runtime.key
     runtime.close()
     assert child.stopped and runtime.ready is False
+
+
+@pytest.mark.parametrize('cpu', [False, True])
+def test_windows_runtime_selects_separate_cuda_or_cpu_binary(monkeypatch, tmp_path, cpu):
+    import scripts.utils.llama_runtime as module
+    import scripts.utils.show_day_control as control
+    runtime_dir = tmp_path / 'runtime'
+    runtime_dir.mkdir()
+    (runtime_dir / 'windows-provenance.json').write_text('{}')
+    for folder in ('llama-cuda', 'llama-cpu'):
+        (runtime_dir / folder).mkdir()
+        (runtime_dir / folder / 'llama-server.exe').write_bytes(b'test')
+    monkeypatch.delenv('BEACON_LLAMA_SERVER_PATH', raising=False)
+    monkeypatch.setenv('BEACON_GGUF_GPU_LAYERS', '0' if cpu else 'all')
+    monkeypatch.setattr(module.sys, 'platform', 'win32')
+    monkeypatch.setattr(module, 'verify_model', lambda root: (tmp_path / 'model.gguf', {}))
+    monkeypatch.setattr(control, 'available_port', lambda port: None)
+    commands = []
+    class Child:
+        stdout = io.StringIO('')
+        stopped = False
+        def poll(self): return 0 if self.stopped else None
+        def terminate(self): self.stopped = True
+        def wait(self, timeout): return 0
+    child = Child()
+    monkeypatch.setattr(module.subprocess, 'Popen', lambda command, **kw: commands.append(command) or child)
+    runtime = module.LlamaRuntime(tmp_path)
+    monkeypatch.setattr(runtime, 'json', lambda *args, **kw: {'status': 'ok'})
+    runtime.start()
+    try:
+        command = commands[0]
+        assert Path(command[0]).parent.name == ('llama-cpu' if cpu else 'llama-cuda')
+        assert runtime.cuda is (not cpu)
+        if cpu:
+            assert '--device' not in command
+        else:
+            assert command[command.index('--device') + 1] == 'CUDA0'
+        assert command[command.index('--n-gpu-layers') + 1] == ('0' if cpu else 'all')
+        status = GGUFModelService(runtime).get_gpu_status()
+        assert status['device'] == ('llama.cpp CPU' if cpu else 'NVIDIA GPU (CUDA)')
+        assert status['shared_memory'] is cpu
+        assert status['vram_allocated_gb'] is None
+    finally:
+        runtime.close()
+    assert child.stopped
